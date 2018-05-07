@@ -1,6 +1,8 @@
 #!/usgs/apps/anaconda/bin/python
 
-import os, sys, subprocess
+import os
+import sys
+import subprocess
 
 from RedisQueue import *
 from RedisHash import *
@@ -13,6 +15,7 @@ import json
 from PDS_DBquery import *
 
 import pdb
+
 
 def main():
 
@@ -36,8 +39,6 @@ def main():
 
     print result
 
-
-
     zipQueue = RedisQueue(FKey + '_ZIP')
     loggyQueue = RedisQueue(FKey + '_loggy')
     infoHash = RedisHash(FKey + '_info')
@@ -45,7 +46,6 @@ def main():
 
 #    infoHash.RemoveAll()
 #    recipeQueue.RemoveAll()
-
 
 
 #    for element in loggyQueue.ListGet():
@@ -57,7 +57,6 @@ def main():
 #        print ""
 #        for testfile in testDICT:
 #            print testfile
-
 
 
 if __name__ == "__main__":
