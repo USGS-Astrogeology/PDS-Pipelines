@@ -1,6 +1,10 @@
 #!/usgs/apps/anaconda/bin/python
 
-import os, sys, subprocess, datetime, pytz
+import os
+import sys
+import subprocess
+import datetime
+import pytz
 import argparse
 import json
 
@@ -9,16 +13,22 @@ import sqlalchemy
 from sqlalchemy import Date, cast
 
 from sqlalchemy import *
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import mapper
-from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm.util import *
 from sqlalchemy.ext.declarative import declarative_base
 
+from db import Files, Archives, db_connect
+
 import pdb
 
+
 class Args:
+    """
+    Attributes
+    ----------
+    archive
+    volume
+    """
     def __init__(self):
         pass
 
@@ -26,18 +36,73 @@ class Args:
         parser = argparse.ArgumentParser(description='Find Arcives for DI')
 
         parser.add_argument('--archive', '-a', dest="archive",
-                          help="Enter archive to test for DI")
+                            help="Enter archive to test for DI")
 
         parser.add_argument('--volume', '-v', dest="volume",
-                          help="Enter Volume to Test")
+                            help="Enter Volume to Test")
 
         args = parser.parse_args()
         self.archive = args.archive
         self.volume = args.volume
 
-def main():
 
-#    pdb.set_trace()
+def archive_expired(session, archiveID, files, testing_date=None):
+    """
+    Parameters
+    ----------
+    session
+    archiveID
+    files
+    testing_date
+
+    Returns
+    -------
+    expired
+    """
+    if testing_date == None:
+        td = (datetime.datetime.now(pytz.utc)
+              - datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+
+        testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
+
+    expired = session.query(Files).filter(
+        files.c.archiveid == archiveID).filter(or_(
+            cast(files.c.di_date, Date) < testing_date,
+            cast(files.c.di_date, Date) == None))
+
+    return expired
+
+
+def volume_expired(session, archiveID, files, testing_date=None):
+    """
+    Parameters
+    ----------
+    session
+    archiveID
+    files
+    testing_date
+
+    Returns
+    -------
+    expired
+    """
+    if testing_date == None:
+        td = (datetime.datetime.now(pytz.utc)
+              - datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+
+        testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
+
+    volstr = '%' + args.volume + '%'
+    expired = session.query(Files).filter(files.c.archiveid == archiveID,
+                                          files.c.filename.like(volstr)).filter(or_(
+                                              cast(files.c.di_date,
+                                                   Date) < testing_date,
+                                              cast(files.c.di_date, Date) == None))
+
+    return expired
+
+
+def main():
 
     args = Args()
     args.parse_args()
@@ -46,54 +111,33 @@ def main():
     archiveID = PDSinfoDICT[args.archive]['archiveid']
 
     try:
-        engine = create_engine('postgresql://pdsdi:dataInt@dino.wr.usgs.gov:3309/pds_di_prd')
-        metadata = MetaData(bind=engine)
-        files = Table('files', metadata, autoload=True)
-        archives = Table('archives', metadata, autoload=True)
-
-        class Files(object):
-            pass
-        class Archives(object):
-            pass
-
-        filesmapper = mapper(Files, files)
-        archivesmapper = mapper(Archives, archives)
-        Session = sessionmaker()
-        session = Session()
-        print 'Database Connection Success'
-    except:
-        print 'Database Connection Error'
-
-    td = (datetime.datetime.now(pytz.utc) - datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
-    testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
-
-    if args.volume:
-        volstr = '%' + args.volume + '%'
-
-        testQ = session.query(Files).filter(files.c.archiveid == archiveID, files.c.filename.like(volstr)).filter(or_(cast(files.c.di_date, Date) < testing_date, cast(files.c.di_date, Date) == None)).count()
-        
-#        testQ = session.query(Files).filter(files.c.archiveid == archiveID, 
-#                                            files.c.filename.like(volstr), 
-#                                            cast(files.c.di_date, Date) < testing_date).count()
-
-        if testQ > 0:
-            print 'Volume %s DI Ready: %s Files' % (args.volume, str(testQ))
-        elif testQ == 0:
-            print 'Volume %s DI Current' % args.volume
-
+        # Throws away 'engine' information
+        session, files, archives, _ = db_connect('pdsdi')
+        print(args.archive)
+        print('Database Connection Success')
+    except Exception as e:
+        print(e)
     else:
+        # if db connection fails, there's no sense in doing this part
+        td = (datetime.datetime.now(pytz.utc)
+              - datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+        testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
 
-        testQ = session.query(Files).filter(files.c.archiveid == archiveID).filter(or_(cast(files.c.di_date, Date) < testing_date, cast(files.c.di_date, Date) == None)).count()
+        if args.volume:
+            expired = volume_expired(session, archiveID, files, testing_date)
+            if expired.count():
+                print('Volume {} DI Ready: {} Files'.format(
+                    args.volume, str(expired.count())))
+            else:
+                print('Volume {} DI Current'.format(args.volume))
+        else:
+            expired = archive_expired(session, archiveID, files, testing_date)
+            if expired.count():
+                print('Archive {} DI Ready: {} Files'.format(
+                    args.archive, str(expired.count())))
+            else:
+                print('Archive {} DI Current'.format(args.archive))
 
-#        testQ = session.query(Files).filter(files.c.archiveid == archiveID,
-#                                            cast(files.c.di_date, Date) < testing_date).count()
-    
-        if testQ > 0:
-            print 'Archive %s DI Ready: %s Files' % (args.archive, str(testQ))
-        elif testQ == 0:
-            print 'Archive %s DI Current' % args.archive
-
-    
 
 if __name__ == "__main__":
     sys.exit(main())

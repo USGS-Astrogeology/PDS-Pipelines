@@ -1,5 +1,7 @@
 #!/usgs/apps/anaconda/bin/python
-import os, sys, pvl
+import os
+import sys
+import pvl
 import logging
 import json
 
@@ -21,7 +23,7 @@ from geoalchemy2 import Geometry
 
 import pdb
 
-#def find_keyword(obj, key):
+# def find_keyword(obj, key):
 #    if key in obj:
 #        return obj[key]
 #    for k, v in obj.items():
@@ -30,6 +32,7 @@ import pdb
 #            if F_item is not None:
 #                return F_item
 
+
 def main():
 
     pdb.set_trace()
@@ -37,7 +40,12 @@ def main():
     workarea = '/scratch/pds_services/workarea/'
 
     Base = declarative_base()
-    engine = create_engine('postgresql://upcmgr:un1pl@c0@dino.wr.usgs.gov:3309/upc_dev')
+    engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(upcdev_user,
+                                                                upcdev_pass,
+                                                                upcdev_host,
+                                                                upcdev_port,
+                                                                upcdev_db))
+
     metadata = MetaData(bind=engine)
 
 #    datafiles = Table('datafiles', metadata, autoload=True)
@@ -63,13 +71,12 @@ def main():
     Session = sessionmaker(bind=engine)
     session = Session()
 
-
-    test_QD = session.query(datafiles).filter(datafiles.isisid == 'MeSSEnGeR/MDIS-NAC/1/0210459695:983000').first()
+    test_QD = session.query(datafiles).filter(
+        datafiles.isisid == 'MeSSEnGeR/MDIS-NAC/1/0210459695:983000').first()
 
     print 'test of clem: %s' % test_QD.isisid
 
     test_G = session.query(meta_geom).first()
-
 
     testpvl = '/scratch/pds_services/workarea/J13_049686_2145_XN_34N285W_caninfo.pvl'
 #    label = pvl.load(testpvl)
@@ -83,7 +90,8 @@ def main():
     test_target = keyOBJ.getKeyword('Instrument', 'TargetName').upper()
     print 'test target: %s' % test_target
 
-    test_QT = session.query(targets).filter(targets.targetname == test_target.upper()).first()
+    test_QT = session.query(targets).filter(
+        targets.targetname == test_target.upper()).first()
     print 'test of targetid: %s' % test_QT.targetid
 
 #    test_input = datafiles(isisid=test_isisid)
@@ -91,7 +99,5 @@ def main():
 #    session.commit()
 
 
-
 if __name__ == "__main__":
     sys.exit(main())
-
