@@ -1,6 +1,8 @@
 #!/usgs/apps/anaconda/bin/python
 
-import os, sys, subprocess
+import os
+import sys
+import subprocess
 
 import logging
 import shutil
@@ -16,27 +18,29 @@ from HPCjob import *
 
 import pdb
 
+
 def main():
 
-#   pdb.set_trace()
-#***************** Setup Logging **************
+    #   pdb.set_trace()
+    #***************** Setup Logging **************
     logger = logging.getLogger('FinalJobber')
     logger.setLevel(logging.INFO)
     logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/Service.log')
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s, %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)
     logger.addHandler(logFileHandle)
 
 #***************Look at Final queue for work************
     RQ_final = RedisQueue('FinalQueue')
     if int(RQ_final.QueueSize()) == 0:
-#        logger.info('NO Keys Found in FinalQueue')
+        #        logger.info('NO Keys Found in FinalQueue')
         print 'Nothing Found in Final Queue'
     else:
         FKey = RQ_final.QueueGet()
         logger.info('Found %s in Final Queue', FKey)
 
-##** *************** HPC job stuff ***********************
+# ** *************** HPC job stuff ***********************
 
         logger.info('HPC Cluster job Submission Starting')
         jobOBJ = HPCjob()
@@ -67,11 +71,6 @@ def main():
         except IOError as e:
             logger.error('Jobs NOT Submitted to HPC')
 
+
 if __name__ == "__main__":
     sys.exit(main())
-
-
-
-
-
-

@@ -1,6 +1,9 @@
 #!/usgs/apps/anaconda/bin/python
 
-import os, sys, subprocess, logging
+import os
+import sys
+import subprocess
+import logging
 import argparse
 import json
 
@@ -18,6 +21,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from RedisQueue import *
 
 import pdb
+from config import *
+
 
 class Args:
     def __init__(self):
@@ -28,13 +33,13 @@ class Args:
         parser = argparse.ArgumentParser(description='PDS DI Data Integrity')
 
         parser.add_argument('--archive', '-a', dest="archive", required=True,
-                          help="Enter archive - archive to ingest")
+                            help="Enter archive - archive to ingest")
 
         parser.add_argument('--volume', '-v', dest="volume",
-                          help="Enter voluem to Ingest")
+                            help="Enter voluem to Ingest")
 
         parser.add_argument('--search', '-s', dest="search",
-                          help="Enter string to search for")
+                            help="Enter string to search for")
 
         args = parser.parse_args()
 
@@ -45,14 +50,15 @@ class Args:
 
 def main():
 
-#    pdb.set_trace()
+    #    pdb.set_trace()
     args = Args()
     args.parse_args()
 
     logger = logging.getLogger('UPC_Queueing.' + args.archive)
     logger.setLevel(logging.INFO)
     logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/Process.log')
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s, %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)
     logger.addHandler(logFileHandle)
 
@@ -64,7 +70,12 @@ def main():
     RQ = RedisQueue('UPC_ReadyQueue')
 
     try:
-        engine = create_engine('postgresql://pdsdi:dataInt@dino.wr.usgs.gov:3309/pds_di_prd')
+        engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(pdsdi_user,
+                                                                    pdsdi_pass,
+                                                                    pdsdi_host,
+                                                                    pdsdi_port,
+                                                                    pdsdi_db))
+
         metadata = MetaData(bind=engine)
         files = Table('files', metadata, autoload=True)
 
@@ -77,7 +88,7 @@ def main():
         print 'Database Connection Success'
     except:
         print 'Database Connection Error'
-    
+
     if args.volume:
         volstr = '%' + args.volume + '%'
 
@@ -87,16 +98,15 @@ def main():
 
         if Qnum > 0:
             print "We have files for UPC"
-                                             
-            qOBJ = DBsession.query(Files).filter(files.c.archiveid == archiveID, 
-                                                 files.c.filename.like(volstr), 
+
+            qOBJ = DBsession.query(Files).filter(files.c.archiveid == archiveID,
+                                                 files.c.filename.like(volstr),
                                                  files.c.upc_required == 't')
         else:
             print "No UPC files found"
 
-
     else:
-        qOBJ = DBsession.query(Files).filter(files.c.archiveid == archiveid, 
+        qOBJ = DBsession.query(Files).filter(files.c.archiveid == archiveid,
                                              files.c.upc_required == 't')
     if qOBJ:
         addcount = 0
@@ -109,5 +119,6 @@ def main():
 
     print "Done"
 
+
 if __name__ == "__main__":
-    sys.exit(main())    
+    sys.exit(main())

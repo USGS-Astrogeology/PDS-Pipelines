@@ -1,6 +1,9 @@
 #!/usgs/apps/anaconda/bin/python
 
-import os, sys, pvl, subprocess
+import os
+import sys
+import pvl
+import subprocess
 import logging
 import shutil
 
@@ -15,9 +18,10 @@ from SubLoggy import *
 
 import pdb
 
+
 def main():
 
-#    pdb.set_trace()
+    #    pdb.set_trace()
 
     Key = sys.argv[-1]
     workarea = '/scratch/pds_services/' + Key + '/'
@@ -29,7 +33,8 @@ def main():
     logger = logging.getLogger(Key + '.STEP2')
     logger.setLevel(logging.INFO)
     logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/BataMOW.log')
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s, %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)
     logger.addHandler(logFileHandle)
 
@@ -64,9 +69,9 @@ def main():
                             f2.write(workarea + item + "\n")
                 f2.close()
 
-    
                 processOBJ.updateParameter('fromlist', AUTOlist)
-                processOBJ.updateParameter('mosaic', workarea + 'testmosaic.cub')
+                processOBJ.updateParameter(
+                    'mosaic', workarea + 'testmosaic.cub')
                 processOBJ.updateParameter('priority', 'ONTOP')
 
             print processOBJ.getProcess()
@@ -85,6 +90,7 @@ def main():
 
     if status == 'success':
         logger.info('Mosaic Should be GO')
+
 
 if __name__ == "__main__":
     sys.exit(main())
