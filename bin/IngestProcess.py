@@ -1,11 +1,15 @@
 #!/usgs/apps/anaconda/bin/python
-import os, sys, subprocess, datetime, pytz
+import os
+import sys
+import subprocess
+import datetime
+import pytz
 import logging
 import json
 from RedisQueue import *
 from PDS_DBquery import *
 
-import hashlib 
+import hashlib
 import shutil
 
 import sqlalchemy
@@ -20,8 +24,18 @@ from sqlalchemy.ext.declarative import declarative_base
 
 import pdb
 
-def getArchiveID(inputfile):
 
+def getArchiveID(inputfile):
+    """
+    Parameters
+    ----------
+    inputfile : str
+
+    Returns
+    -------
+    str
+        archive
+    """
     if 'Mars_Reconnaissance_Orbiter/CTX' in inputfile:
         archive = 'mroCTX'
     elif 'Mars_Reconnaissance_Orbiter/MARCI' in inputfile:
@@ -37,14 +51,14 @@ def getArchiveID(inputfile):
     elif 'Dawn/Ceres' in inputfile:
         archive = 'dawnCeres'
     elif 'MESSENGER' in inputfile:
-        archive = 'messenger' 
+        archive = 'messenger'
     elif 'THEMIS/USA_NASA_PDS_ODTSDP_100XX' in inputfile:
-        if 'odtvb1' in inputfile or 'odtve1' in inputfile or 'odtvr1' in inputfile: 
+        if 'odtvb1' in inputfile or 'odtve1' in inputfile or 'odtvr1' in inputfile:
             archive = 'themisVIS_EDR'
         else:
             archive = 'themisIR_EDR'
     elif 'USA_NASA_PDS_ODTGEO_200XX' in inputfile:
-        archive = 'themisGEO' 
+        archive = 'themisGEO'
     elif 'Lunar_Reconnaissance_Orbiter/LROC/EDR' in inputfile:
         archive = 'lrolrcEDR'
     elif 'Lunar_Reconnaissance_Orbiter/LAMP' in inputfile:
@@ -65,26 +79,28 @@ def getArchiveID(inputfile):
 
     return archive
 
+
 def main():
 
-#    pdb.set_trace()
+    #    pdb.set_trace()
 
     arch = sys.argv[-1]
 
-##********* Set up logging *************
+# ********* Set up logging *************
     logger = logging.getLogger('Ingest_Process')
     logger.setLevel(logging.INFO)
     logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/Ingest.log')
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s, %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)
     logger.addHandler(logFileHandle)
- 
+
     logger.info("Starting Process")
     PDSinfoDICT = json.load(open('/usgs/cdev/PDS/bin/PDSinfo.json', 'r'))
 
     RQ_main = RedisQueue('Ingest_ReadyQueue')
     RQ_work = RedisQueue('Ingest_WorkQueue')
-    
+
     RQ_upc = RedisQueue('UPC_ReadyQueue')
     RQ_thumb = RedisQueue('Thumbnail_ReadyQueue')
     RQ_browse = RedisQueue('Browse_ReadyQueue')
@@ -106,25 +122,25 @@ def main():
         Session = sessionmaker()
         session = Session()
         logger.info('DataBase Connecton: Success')
-    except:   
+    except:
         logger.error('DataBase Connection: Error')
 
     index = 1
 
     while int(RQ_main.QueueSize()) > 0:
 
-        inputfile = RQ_main.Qfile2Qwork(RQ_main.getQueueName(), RQ_work.getQueueName())
+        inputfile = RQ_main.Qfile2Qwork(
+            RQ_main.getQueueName(), RQ_work.getQueueName())
         archive = getArchiveID(inputfile)
         subfile = inputfile.replace(PDSinfoDICT[archive]['path'], '')
 
-#Gen a checksum from input file
+# Gen a checksum from input file
         CScmd = 'md5sum ' + inputfile
         process = subprocess.Popen(CScmd, stdout=subprocess.PIPE, shell=True)
         (stdout, stderr) = process.communicate()
         filechecksum = stdout.split()[0]
 
-        QOBJ = session.query(Files).filter_by(filename = subfile).first()
- 
+        QOBJ = session.query(Files).filter_by(filename=subfile).first()
 
         runflag = 'false'
         if QOBJ is None:
@@ -133,8 +149,10 @@ def main():
             runflag = 'true'
 
         if runflag == 'true':
-            date = datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-            fileURL = inputfile.replace('/pds_san/PDS_Archive/', 'pdsimage.wr.usgs.gov/Missions/')
+            date = datetime.datetime.now(
+                pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
+            fileURL = inputfile.replace(
+                '/pds_san/PDS_Archive/', 'pdsimage.wr.usgs.gov/Missions/')
             upcflag = 'f'
             if int(PDSinfoDICT[archive]['archiveid']) == 124:
                 if '.IMG' in inputfile:
@@ -159,7 +177,7 @@ def main():
                 RQ_upc.QueueAdd(inputfile)
                 RQ_thumb.QueueAdd(inputfile)
                 RQ_browse.QueueAdd(inputfile)
-                RQ_pilotB.QueueAdd(inputfile)            
+                RQ_pilotB.QueueAdd(inputfile)
 
             filesize = os.path.getsize(inputfile)
 
@@ -189,7 +207,7 @@ def main():
                 logger.error("Error During File Insert %s", subfile)
 
         elif runflag == 'false':
-            RQ_work.QueueRemove(inputfile) 
+            RQ_work.QueueRemove(inputfile)
 
         if index >= 250:
             try:
@@ -197,8 +215,8 @@ def main():
 #                logger.info("Commit 250 files to Database: Success")
                 index = 1
             except:
-                session.rollback()  
-                logger.error("Something Went Wrong During DB Insert")     
+                session.rollback()
+                logger.error("Something Went Wrong During DB Insert")
     else:
         logger.info("No Files Found in Inget Queue")
         try:
@@ -210,10 +228,11 @@ def main():
     if RQ_main.QueueSize() == 0 and RQ_work.QueueSize() == 0:
         logger.info("Process Complete All Queues Empty")
     elif RQ_main.QueueSize() == 0 and RQ_work.QueueSize() != 0:
-        logger.warning("Process Done Work Queue NOT Empty Contains %s Files", str(RQ_work.QueueSize())) 
+        logger.warning("Process Done Work Queue NOT Empty Contains %s Files", str(
+            RQ_work.QueueSize()))
 
     logger.info("Ingest Complete")
 
+
 if __name__ == "__main__":
     sys.exit(main())
-

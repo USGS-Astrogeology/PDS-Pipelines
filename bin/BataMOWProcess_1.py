@@ -1,6 +1,9 @@
 #!/usgs/apps/anaconda/bin/python
 
-import os, sys, pvl, subprocess
+import os
+import sys
+import pvl
+import subprocess
 import logging
 import shutil
 
@@ -16,15 +19,16 @@ from HPCjob import *
 
 import pdb
 
+
 def main():
 
-#    pdb.set_trace()
+    #    pdb.set_trace()
 
     Key = sys.argv[-1]
 
     workarea = '/scratch/pds_services/' + Key + '/'
 
-##*********Redis Queue Setups *************
+# *********Redis Queue Setups *************
     RQ_file = RedisQueue(Key + '_FileQueue')
     RQ_work = RedisQueue(Key + '_WorkQueue')
     RQ_mosaic = RedisQueue(Key + '_MosaicQueue')
@@ -34,7 +38,8 @@ def main():
     if int(RQ_file.QueueSize()) == 0:
         print "No Files Found in Redis Queue"
     else:
-        jobFile = RQ_file.Qfile2Qwork(RQ_file.getQueueName(), RQ_work.getQueueName())
+        jobFile = RQ_file.Qfile2Qwork(
+            RQ_file.getQueueName(), RQ_work.getQueueName())
 
 #******************** Setup system logging **********************
         basename = os.path.splitext(os.path.basename(jobFile))[0]
@@ -42,14 +47,17 @@ def main():
         logger.setLevel(logging.INFO)
 
         logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/BataMOW.log')
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s, %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
         logFileHandle.setFormatter(formatter)
         logger.addHandler(logFileHandle)
 
         logger.info('Starting BataMOW STEP 1 Processing')
 
-        infile = workarea + os.path.splitext(os.path.basename(jobFile))[0] + '.input.cub'
-        outfile = workarea + os.path.splitext(os.path.basename(jobFile))[0] + '.output.cub'
+        infile = workarea + \
+            os.path.splitext(os.path.basename(jobFile))[0] + '.input.cub'
+        outfile = workarea + \
+            os.path.splitext(os.path.basename(jobFile))[0] + '.output.cub'
 
         status = 'success'
         for element in RQ_recipe.RecipeGet():
@@ -90,7 +98,7 @@ def main():
                     isis.camrange(from_=infile,
                                   to=camrangeOUT)
                     camlab = pvl.load(camrangeOUT)
-                        
+
                     if camlab['UniversalGroundRange']['MinimumLatitude'] > float(RH_info.getMinLat()):
                         minlat = camlab['UniversalGroundRange']['MinimumLatitude']
                     else:
@@ -105,7 +113,7 @@ def main():
                         minlon = camlab['UniversalGroundRange']['MinimumLongitude']
                     else:
                         minlon = RH_info.getMinLon()
-                
+
                     if camlab['UniversalGroundRange']['MaximumLongitude'] < float(RH_info.getMaxLon()):
                         maxlon = camlab['UniversalGroundRange']['MaximumLongitude']
                     else:
@@ -140,20 +148,23 @@ def main():
             finalfile = infile.replace('.input.cub', '_proj.cub')
             shutil.move(infile, finalfile)
 
-            try: 
+            try:
                 RQ_mosaic.QueueAdd(finalfile)
                 logger.info('File %s Added to mosaic Queue', finalfile)
                 RQ_work.QueueRemove(jobFile)
             except:
-                logger.error('File %s **NOT** Added to mosaic Queue', finalfile)
+                logger.error(
+                    'File %s **NOT** Added to mosaic Queue', finalfile)
 
             if RQ_file.QueueSize() == 0 and RQ_work.QueueSize() == 0:
-                
+
                 logger.info('HPC Cluster BataMOW 2 job Submission Starting')
                 jobOBJ = HPCjob()
                 jobOBJ.setJobName(Key + '_BataMOW2')
-                jobOBJ.setStdOut('/usgs/cdev/PDS/output/' + Key + '_BM2_%A_%a.out')
-                jobOBJ.setStdError('/usgs/cdev/PDS/output/' + Key + '_BM2_%A_%a.err')
+                jobOBJ.setStdOut('/usgs/cdev/PDS/output/' +
+                                 Key + '_BM2_%A_%a.out')
+                jobOBJ.setStdError(
+                    '/usgs/cdev/PDS/output/' + Key + '_BM2_%A_%a.err')
                 jobOBJ.setWallClock('02:00:00')
                 jobOBJ.setMemory('4096')
                 jobOBJ.setPartition('pds')
@@ -168,23 +179,16 @@ def main():
                 try:
                     sb = open(SBfile)
                     sb.close
-                    logger.info('SBATCH File %s Creation: Success', SBfile) 
+                    logger.info('SBATCH File %s Creation: Success', SBfile)
                 except IOError as e:
                     logger.error('SBATCH File %s Not Found', SBfile)
-                                          
+
                 try:
                     jobOBJ.Run()
                     logger.info('Job Submission to HPC: Success')
                 except IOError as e:
                     logger.error('Jobs NOT Submitted to HPC')
-                    
+
+
 if __name__ == "__main__":
-    sys.exit(main())    
-
-
-
-
-
-
-
-
+    sys.exit(main())
