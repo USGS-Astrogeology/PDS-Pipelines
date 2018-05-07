@@ -5,7 +5,6 @@ import subprocess
 
 class HPCjob(object):
     """
-
     Attributes
     ----------
     jobstring : str

@@ -25,20 +25,45 @@ import pdb
 class jobXML(object):
 
     def __init__(self, xml):
+        """
+        Parameters
+        ----------
+        xml
+        """
 
         self.root = ET.fromstring(str(xml))
 
     def getInst(self):
+        """
+        Returns
+        -------
+        str
+            inst
+        """
         for info in self.root.findall('.//Process'):
             inst = info.find('.//instrument').text
             return inst
 
     def getProcess(self):
+        """
+        Returns
+        -------
+        str
+            PT
+        """
         for info in self.root.findall('Process'):
             PT = info.find('ProcessName').text
             return PT
 
     def getTargetName(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//TargetName')' is None
+        str
+            otherwise return 'info.find('.//TargetName').text'
+        """
         for info in self.root.iter('Target'):
             if info.find('.//TargetName') is None:
                 return None
@@ -46,6 +71,14 @@ class jobXML(object):
                 return info.find('.//TargetName').text
 
     def getERadius(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//EquatorialRadius')' is None
+        str
+            Otherwise return 'info.find('.//EquatorialRadius').text'
+        """
         for info in self.root.iter('Target'):
             if info.find('.//EquatorialRadius') is None:
                 return None
@@ -53,6 +86,14 @@ class jobXML(object):
                 return info.find('.//EquatorialRadius').text
 
     def getPRadius(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//PolarRadius')' is None
+        str
+            Otherwise return 'info.find('.//PolarRadius').text'
+        """
         for info in self.root.iter('Target'):
             if info.find('.//PolarRadius') is None:
                 return None
@@ -60,6 +101,14 @@ class jobXML(object):
                 return info.find('.//PolarRadius').text
 
     def getLatType(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//LatitudeType')' is None
+        str
+            Otherwise return 'LT'
+        """
         for info in self.root.iter('Target'):
             if info.find('.//LatitudeType') is None:
                 return None
@@ -72,6 +121,14 @@ class jobXML(object):
             return LT
 
     def getLonDirection(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//LongitudeDirection')' is None
+        str
+            Otherwise return 'LD'
+        """
         for info in self.root.iter('Target'):
             if info.find('.//LongitudeDirection') is None:
                 return None
@@ -84,6 +141,14 @@ class jobXML(object):
             return LD
 
     def getLonDomain(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//LongitudeDomain')' is None
+        str
+            otherwise return 'info.find('.//LongitudeDomain').text'
+        """
         for info in self.root.iter('Target'):
             if info.find('.//LongitudeDomain') is None:
                 return None
@@ -91,6 +156,14 @@ class jobXML(object):
                 return info.find('.//LongitudeDomain').text
 
     def getProjection(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'proj' is None
+        str
+            Otherwise 'info.find('ProjName').text'
+        """
         for info in self.root.iter('Projection'):
             proj = info.find('ProjName').text
             if proj is None:
@@ -99,6 +172,14 @@ class jobXML(object):
                 return info.find('ProjName').text
 
     def getClon(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'clon' is None
+        str
+            Otherwise 'info.find('CenterLongitude').text'
+        """
         for info in self.root.iter('Projection'):
             clon = info.find('CenterLongitude')
             if clon is None:
@@ -107,6 +188,14 @@ class jobXML(object):
                 return info.find('CenterLongitude').text
 
     def getClat(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'clat' is None
+        str
+            Otherwise 'info.find('CenterLatitude').text'
+        """
         for info in self.root.iter('Projection'):
             clat = info.find('CenterLatitude')
             if clat is None:
@@ -115,6 +204,14 @@ class jobXML(object):
                 return info.find('CenterLatitude').text
 
     def getFirstParallel(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//FirstStandardParallel')' is None
+        str
+            Otherwise 'info.find('.//FirstStandardParallel').text'
+        """
         for info in self.root.iter('Projection'):
             if info.find('.//FirstStandardParallel') is None:
                 return None
@@ -122,6 +219,14 @@ class jobXML(object):
                 return info.find('.//FirstStandardParallel').text
 
     def getSecondParallel(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//SecondStandardParallel')' is None
+        str
+            Otherwise 'info.find('.//SecondStandardParallel').text'
+        """
         for info in self.root.iter('Projection'):
             if info.find('.//SecondStandardParallel') is None:
                 return None
@@ -129,6 +234,14 @@ class jobXML(object):
                 return info.find('.//SecondStandardParallel').text
 
     def OutputGeometry(self):
+        """
+        Returns
+        -------
+        NoneType
+            None if 'info' is None
+        bool
+            True if 'info' is not None
+        """
         for info in self.root.iter('OutputGeometry'):
             if info is None:
                 return None
@@ -136,6 +249,14 @@ class jobXML(object):
                 return True
 
     def getRangeType(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//extentType')' is None
+        str
+            Otherwise 'info.find('.//extentType').text'
+        """
         for info in self.root.iter('extents'):
             if info.find('.//extentType') is None:
                 return None
@@ -143,6 +264,14 @@ class jobXML(object):
                 return info.find('.//extentType').text
 
     def getMinLat(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//MinLatitude')' is None
+        str
+            Otherwise 'info.find('.//MinLatitude').text'
+        """
         for info in self.root.iter('extents'):
             if info.find('.//MinLatitude') is None:
                 return None
@@ -150,6 +279,14 @@ class jobXML(object):
                 return info.find('.//MinLatitude').text
 
     def getMaxLat(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//MaxLatitude')' is None
+        str
+            Otherwise 'info.find('.//MaxLatitude').text'
+        """
         for info in self.root.iter('extents'):
             if info.find('.//MaxLatitude') is None:
                 return None
@@ -157,6 +294,14 @@ class jobXML(object):
                 return info.find('.//MaxLatitude').text
 
     def getMinLon(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//MinLongitude')' is None
+        str
+            Otherwise 'info.find('.//MinLongitude').text'
+        """
         for info in self.root.iter('extents'):
             if info.find('.//MinLongitude') is None:
                 return None
@@ -164,6 +309,14 @@ class jobXML(object):
                 return info.find('.//MinLongitude').text
 
     def getMaxLon(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//MaxLongitude')' is None
+        str
+            Otherwise 'info.find('.//MaxLongitude').text'
+        """
         for info in self.root.iter('extents'):
             if info.find('.//MaxLongitude') is None:
                 return None
@@ -171,6 +324,14 @@ class jobXML(object):
                 return info.find('.//MaxLongitude').text
 
     def getResolution(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//OutputResolution')' is None
+        str
+            Otherwise 'info.find('.//OutputResolution').text'
+        """
         for info in self.root.iter('OutputOptions'):
             if info.find('.//OutputResolution') is None:
                 return None
@@ -178,6 +339,14 @@ class jobXML(object):
                 return info.find('.//OutputResolution').text
 
     def getGridInterval(self):
+        """
+        Returns
+        -------
+        NoneType
+            'None' if 'info.find('.//interval')' is None
+        str
+            Otherwise 'info.find('.//interval').text'
+        """
         for info in self.root.iter('grid'):
             if info.find('.//interval') is None:
                 return None
@@ -185,6 +354,13 @@ class jobXML(object):
                 return info.find('.//interval').text
 
     def getOutBit(self):
+        """
+        Returns
+        -------
+        str
+            'input' if 'info.find('.//BitType')' is None,
+            otherwise 'info.find('.//BitType').text'
+        """
         for info in self.root.findall('.//OutputType'):
             if info.find('.//BitType') is None:
                 return 'input'
@@ -192,11 +368,26 @@ class jobXML(object):
                 return info.find('.//BitType').text
 
     def getOutFormat(self):
+        """
+        Returns
+        -------
+        str
+            outputFormat
+        """
         for info in self.root.findall('.//OutputType'):
             outputFormat = info.find('.//Format').text
             return outputFormat
 
     def STR_Type(self):
+        """
+        Returns
+        -------
+        NoneType
+            None
+        str
+            'StretchPercent', 'HistogramEqualization', 'GaussStretch',
+            "SigmaStretch'
+        """
         for info in self.root.findall('.//Process'):
             if info.find('.//stretch') is None:
                 return None
@@ -210,6 +401,14 @@ class jobXML(object):
                 return 'SigmaStretch'
 
     def STR_PercentMin(self):
+        """
+        Returns
+        -------
+        NoneType
+            None
+        str
+            info.find('.//min').text
+        """
         for info in self.root.findall('.//Process'):
             if info.find('.//min') is None:
                 return None
@@ -217,6 +416,14 @@ class jobXML(object):
                 return info.find('.//min').text
 
     def STR_PercentMax(self):
+        """
+        Returns
+        -------
+        NoneType
+            None
+        str
+            info.find('.//max').text
+        """
         for info in self.root.findall('.//Process'):
             if info.find('.//max') is None:
                 return None
@@ -224,10 +431,22 @@ class jobXML(object):
                 return info.find('.//max').text
 
     def STR_GaussSigma(self):
+        """
+        Returns
+        -------
+        str
+            info.find('.//gsigma').text
+        """
         for info in self.root.findall('.//Process'):
             return info.find('.//gsigma').text
 
     def STR_SigmaVariance(self):
+        """
+        Returns
+        -------
+        str
+            info.find('.//variance').text
+        """
         for info in self.root.findall('.//Process'):
             return info.find('.//variance').text
 
@@ -242,6 +461,12 @@ class jobXML(object):
 #            return bandF
 
     def getFileListWB(self):
+        """
+        Returns
+        -------
+        list
+            listArray
+        """
         listArray = []
         for info in self.root.iter('ImageUrl'):
             fileUrl = info.find('url').text
@@ -260,6 +485,12 @@ class jobXML(object):
         return listArray
 
     def getMFileListWB(self):
+        """
+        Returns
+        -------
+        list
+            listArray
+        """
         listArray = []
         for info in self.root.iter('ImageList'):
             Mfile = info.find('.//internalpath').text
@@ -278,6 +509,12 @@ class jobXML(object):
         return listArray
 
     def getFileList(self):
+        """
+        Returns
+        -------
+        list
+            listArray
+        """
         listArray = []
         for info in self.root.iter('ImageUrl'):
             fileUrl = info.find('url').text

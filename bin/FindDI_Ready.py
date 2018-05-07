@@ -48,6 +48,8 @@ class Args:
 
 def archive_expired(session, archiveID, files, testing_date=None):
     """
+    Checks to see if archive is expired
+
     Parameters
     ----------
     session
@@ -75,6 +77,8 @@ def archive_expired(session, archiveID, files, testing_date=None):
 
 def volume_expired(session, archiveID, files, testing_date=None):
     """
+    Checks to see if the volume is expired
+    
     Parameters
     ----------
     session

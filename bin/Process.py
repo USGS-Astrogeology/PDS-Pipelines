@@ -40,7 +40,8 @@ class Process(object):
 
         Returns
         -------
-        JSONout
+        str
+            JSONout
         """
 
         JSONout = json.loads(element, object_pairs_hook=OrderedDict)
@@ -91,15 +92,17 @@ class Process(object):
         """
         Returns
         -------
-        process
+        dict
+            process
         """
         return self.process
 
     def getProcessName(self):
         """
-        Reurns
+        Returns
         ------
-        processName
+        str
+            processName
         """
         return self.processName
 
@@ -107,7 +110,8 @@ class Process(object):
         """
         Returns
         -------
-        commandSTr
+        str
+            commandSTr
         """
         tempSTR = self.processName
         for key, value in self.process[self.processName].items():
@@ -123,7 +127,8 @@ class Process(object):
         """
         Returns
         -------
-        helplink
+        str
+            helplink
         """
         helplink = 'https://isis.astrogeology.usgs.gov/Application/presentation/Tabbed/' + \
             self.processName + '/' + self.processName + '.html'
@@ -133,7 +138,8 @@ class Process(object):
         """
         Returns
         -------
-        process
+        dict
+            process
         """
         for Rprocess in recipe:
             for key, value in Rprocess.items():
@@ -190,7 +196,8 @@ class Process(object):
 
         Returns
         -------
-        bitDICT[ibit]
+        dict
+            bitDICT[ibit]
         """
         bitDICT = {'unsignedbyte': 'Byte',
                    'signedword': 'Int16',
@@ -207,7 +214,8 @@ class Process(object):
 
         Returns
         -------
-        cDICT[format]
+        dict
+            cDICT[format]
         """
 
         cDICT = {'JPEG': 'quality=100',

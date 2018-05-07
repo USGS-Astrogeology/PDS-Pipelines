@@ -152,7 +152,8 @@ class MakeMap(object):
         """
         Returns
         ----------
-        mappvl
+        str
+            mappvl
         """
         self.mapDICT['End_Group'] = 'Mapping'
 
@@ -165,7 +166,8 @@ class MakeMap(object):
         """
         Returns
         ----------
-        JSONout
+        str
+            JSONout
         """
         JSONout = json.dumps(self.mapDICT)
         return JSONout

@@ -10,14 +10,14 @@ class Loggy(object):
     """
     Attributes
     ---------
-    Lfile
-    loggyDict
+    Lfile : dict
+    loggyDict : dict
     """
     def __init__(self, Lfile):
         """
         Parameters
         ----------
-        Lfile
+        Lfile : dict
         """
         self.Lfile = Lfile
         self.loggyDict = {}
@@ -35,7 +35,7 @@ class Loggy(object):
         """
         Parameters
         ----------
-        PD
+        PD : dict
         """
         self.loggyDict[self.Lfile].update(PD)
 

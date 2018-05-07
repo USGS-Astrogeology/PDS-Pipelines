@@ -30,7 +30,9 @@ import pdb
 
 
 class Args:
-    """ 
+    """
+    Objects that have the attributes described below
+
     Attributes
     ----------
     archive : str
