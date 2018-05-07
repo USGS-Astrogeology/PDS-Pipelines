@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# swap and emacs backup
+*.swp
+*~
+*\#
+
+# configuration file
+*/config.py
