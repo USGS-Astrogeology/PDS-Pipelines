@@ -1,6 +1,8 @@
 #!/usgs/apps/anaconda/bin/python
 
-import os, sys, subprocess
+import os
+import sys
+import subprocess
 import logging
 import shutil
 
@@ -20,8 +22,8 @@ import pdb
 
 def main():
 
-#    pdb.set_trace()
-    
+    #    pdb.set_trace()
+
     Key = sys.argv[-1]
 
     workarea = '/scratch/pds_services/' + Key + '/'
@@ -37,7 +39,8 @@ def main():
     if int(RQ_file.QueueSize()) == 0:
         print "No Files Found in Redis Queue"
     else:
-        jobFile = RQ_file.Qfile2Qwork(RQ_file.getQueueName(), RQ_work.getQueueName())
+        jobFile = RQ_file.Qfile2Qwork(
+            RQ_file.getQueueName(), RQ_work.getQueueName())
 
 #******************** Setup system logging **********************
         basename = os.path.splitext(os.path.basename(jobFile))[0]
@@ -45,7 +48,8 @@ def main():
         logger.setLevel(logging.INFO)
 
         logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/Service.log')
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s, %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
         logFileHandle.setFormatter(formatter)
         logger.addHandler(logFileHandle)
 
@@ -53,17 +57,18 @@ def main():
 
         loggyOBJ = Loggy(basename)
 
-## *************** File Naming ***************
-        infile = workarea + os.path.splitext(os.path.basename(jobFile))[0] + '.input.cub'
-        outfile = workarea + os.path.splitext(os.path.basename(jobFile))[0] + '.output.cub'
+# *************** File Naming ***************
+        infile = workarea + \
+            os.path.splitext(os.path.basename(jobFile))[0] + '.input.cub'
+        outfile = workarea + \
+            os.path.splitext(os.path.basename(jobFile))[0] + '.output.cub'
 
-##*********** Recipe Stuff ********************
+# *********** Recipe Stuff ********************
 
         RQ_recipe = RedisQueue(Key + '_recipe')
 
-
         status = 'success'
-        
+
         for element in RQ_recipe.RecipeGet():
 
             if status == 'error':
@@ -71,13 +76,13 @@ def main():
             elif status == 'success':
                 processOBJ = Process()
                 process = processOBJ.JSON2Process(element)
-               
+
                 if 'gdal_translate' not in processOBJ.getProcessName():
 
                     if 'cubeatt-band' in processOBJ.getProcessName():
                         if '+' in jobFile:
-#                            bandSplit = jobFile.split('+')
- #                           infileB = infile + '+' + bandSplit[1]
+                            #                            bandSplit = jobFile.split('+')
+                         #                           infileB = infile + '+' + bandSplit[1]
                             processOBJ.updateParameter('from_', jobFile)
                             processOBJ.updateParameter('to', outfile)
                             processOBJ.ChangeProcess('cubeatt')
@@ -95,13 +100,13 @@ def main():
                         if RHash.OutBit() == 'unsignedbyte':
                             temp_outfile = outfile + '+lsb+tile+attached+unsignedbyte+1:254'
                         elif RHash.OutBit() == 'signedword':
-                             temp_outfile = outfile + '+lsb+tile+attached+signedword+-32765:32765'
+                            temp_outfile = outfile + '+lsb+tile+attached+signedword+-32765:32765'
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', temp_outfile)
                         processOBJ.ChangeProcess('cubeatt')
 
                     elif 'isis2pds' in processOBJ.getProcessName():
-#                        finalfile = infile.replace('.input.cub', '_final.img')
+                        #                        finalfile = infile.replace('.input.cub', '_final.img')
                         finalfile = workarea + RHash.getMAPname() + '.img'
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', finalfile)
@@ -109,39 +114,40 @@ def main():
                     else:
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', outfile)
-                        
+
                     print processOBJ.getProcess()
 
                     for k, v in processOBJ.getProcess().items():
                         func = getattr(isis, k)
                         subloggyOBJ = SubLoggy(k)
                         try:
-                           func(**v)
-                           logger.info('Process %s :: Success', k)
-                           subloggyOBJ.setStatus('SUCCESS')
-                           subloggyOBJ.setCommand(processOBJ.LogCommandline())
-                           subloggyOBJ.setHelpLink(processOBJ.LogHelpLink())
-                           loggyOBJ.AddProcess(subloggyOBJ.getSLprocess())
+                            func(**v)
+                            logger.info('Process %s :: Success', k)
+                            subloggyOBJ.setStatus('SUCCESS')
+                            subloggyOBJ.setCommand(processOBJ.LogCommandline())
+                            subloggyOBJ.setHelpLink(processOBJ.LogHelpLink())
+                            loggyOBJ.AddProcess(subloggyOBJ.getSLprocess())
 
-                           if os.path.isfile(outfile):
-                               os.rename(outfile, infile)
-                           status = 'success'
+                            if os.path.isfile(outfile):
+                                os.rename(outfile, infile)
+                            status = 'success'
 
                         except ProcessError as e:
                             logger.error('Process %s :: Error', k)
                             logger.error(e)
                             status = 'error'
-                            eSTR = 'Error Executing ' + k + ' Standard Error: ' + str(e)
-                            RHerror.addError(os.path.splitext(os.path.basename(jobFile))[0], eSTR)
+                            eSTR = 'Error Executing ' + k + \
+                                ' Standard Error: ' + str(e)
+                            RHerror.addError(os.path.splitext(
+                                os.path.basename(jobFile))[0], eSTR)
                             subloggyOBJ.setStatus('ERROR')
                             subloggyOBJ.setCommand(processOBJ.LogCommandline())
                             subloggyOBJ.setHelpLink(processOBJ.LogHelpLink())
                             subloggyOBJ.errorOut(eSTR)
                             loggyOBJ.AddProcess(subloggyOBJ.getSLprocess())
-                
 
                 else:
- 
+
                     GDALcmd = ""
                     for process, v, in processOBJ.getProcess().items():
                         subloggyOBJ = SubLoggy(process)
@@ -160,9 +166,8 @@ def main():
                     elif RHash.Format() == 'GIF':
                         fileext = 'gif'
 
-
-
-                    logGDALcmd = GDALcmd + ' ' + basename + '.input.cub ' + RHash.getMAPname() + '.' + fileext
+                    logGDALcmd = GDALcmd + ' ' + basename + '.input.cub ' + RHash.getMAPname() + \
+                        '.' + fileext
                     finalfile = workarea + RHash.getMAPname() + '.' + fileext
 #                    finalfile = infile.replace('.input.cub', '_final.' + fileext)
                     GDALcmd += ' ' + infile + ' ' + finalfile
@@ -170,20 +175,23 @@ def main():
                     try:
                         result = subprocess.call(GDALcmd, shell=True)
                         logger.info('Process GDAL translate :: Success')
-                        status =  'success'
+                        status = 'success'
                         subloggyOBJ.setStatus('SUCCESS')
                         subloggyOBJ.setCommand(logGDALcmd)
-                        subloggyOBJ.setHelpLink('www.gdal.org/gdal_translate.html')
+                        subloggyOBJ.setHelpLink(
+                            'www.gdal.org/gdal_translate.html')
                         loggyOBJ.AddProcess(subloggyOBJ.getSLprocess())
                         os.remove(infile)
                     except OSError, e:
                         logger.error('Process GDAL translate :: Error')
                         logger.error(e.stderr)
                         status = 'error'
-                        RHerror.addError(os.path.splitext(os.path.basename(jobFile))[0], 'Process GDAL translate :: Error')
+                        RHerror.addError(os.path.splitext(os.path.basename(jobFile))[
+                                         0], 'Process GDAL translate :: Error')
                         subloggyOBJ.setStatus('ERROR')
                         subloggyOBJ.setCommand(logGDALcmd)
-                        subloggyOBJ.setHelpLink('http://www.gdal.org/gdal_translate.html')
+                        subloggyOBJ.setHelpLink(
+                            'http://www.gdal.org/gdal_translate.html')
                         subloggyOBJ.errorOut(e.stderr)
                         loggyOBJ.AddProcess(subloggyOBJ.getSLprocess())
 
@@ -213,7 +221,6 @@ def main():
             if os.path.isfile(infile):
                 os.remove(infile)
 
-
         if RQ_file.QueueSize() == 0 and RQ_work.QueueSize() == 0:
             try:
                 RQ_final.QueueAdd(Key)
@@ -222,8 +229,8 @@ def main():
             except:
                 logger.error('Key NOT Added to Final Queue')
         else:
-            logger.warning('Queues Not Empty: filequeue = %s  work queue = %s', str(RQ_file.QueueSize()), str(RQ_work.QueueSize()))
-
+            logger.warning('Queues Not Empty: filequeue = %s  work queue = %s', str(
+                RQ_file.QueueSize()), str(RQ_work.QueueSize()))
 
 
 if __name__ == "__main__":
