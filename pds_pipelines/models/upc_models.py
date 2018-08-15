@@ -3,6 +3,8 @@ from sqlalchemy import (Column, Integer, Float,
                         Time, String, Boolean, PrimaryKeyConstraint, ForeignKey)
 from geoalchemy2 import Geometry
 
+import datetime
+
 Base = declarative_base()
 
 
@@ -81,6 +83,7 @@ class Meta(object):
     # Enforce compound primary key constraint
     __table_args__ = (PrimaryKeyConstraint('upcid', 'typeid'),)
     upcid = Column(Integer)
+
     @declared_attr
     def typeid(cls):
         return Column(Integer, ForeignKey("keywords.typeid"))
@@ -89,11 +92,20 @@ class Meta(object):
 class MetaPrecision(Meta, Base):
     __tablename__ = 'meta_precision'
     value = Column(Float)
+    def __init__(self, **kwargs):
+        if not isinstance(kwargs['value'], float):
+            raise ValueError("MetaPrecision requires a value of type float")
+        Base.__init__(self, **kwargs)
 
 
 class MetaTime(Meta, Base):
     __tablename__ = 'meta_time'
     value = Column(Time)
+
+    def __init__(self, **kwargs):
+        if not isinstance(kwargs['value'], (datetime.datetime, datetime.time)):
+            raise ValueError("MetaTime requires a value of type datetime.datetime or datetime.time")
+        Base.__init__(self, **kwargs)
 
 
 class MetaString(Meta, Base):
@@ -101,16 +113,30 @@ class MetaString(Meta, Base):
     value = Column(String)
     hibernate_ver = Column(Integer, default=0)
 
+    def __init__(self, **kwargs):
+        if not isinstance(kwargs['value'], str):
+            kwargs['value'] = str(kwargs['value'])
+        Base.__init__(self, **kwargs)
+
 
 class MetaInteger(Meta, Base):
     __tablename__ = 'meta_integer'
     value = Column(Integer)
+
+    def __init__(self, **kwargs):
+        if not isinstance(kwargs['value'], int):
+            raise ValueError("MetaInteger requires a value of type int")
+        Base.__init__(self, **kwargs)
 
 
 class MetaBoolean(Meta, Base):
     __tablename__ = 'meta_boolean'
     value = Column(Boolean)
 
+    def __init__(self, **kwargs):
+        if not isinstance(kwargs['value'], bool):
+            raise ValueError("MetaBoolean requires a value of type bool")
+        Base.__init__(self, **kwargs)
 
 class MetaBands(Base):
     __tablename__ = 'meta_bands'
@@ -119,11 +145,17 @@ class MetaBands(Base):
     # @TODO filter is a keyword, we should refactor this here and in db
     filter = Column(String(255))
     centerwave = Column(Float)
-    
+
+    def __init__(self, **kwargs):
+        Base.__init__(self, **kwargs)
 
 class MetaGeometry(Meta, Base):
     __tablename__ = 'meta_geometry'
     value = Column(Geometry('geometry'))
+
+    def __init__(self, **kwargs):
+        Base.__init__(self, **kwargs)
+
 
 
 class_map = {

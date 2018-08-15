@@ -1,4 +1,5 @@
 #!/usgs/apps/anaconda/bin/python
+import re
 import os
 import sys
 import pvl
@@ -180,12 +181,8 @@ def main():
                     elif item == 'thmproc':
                         processOBJ.updateParameter('from_', inputfile)
                         processOBJ.updateParameter('to', outfile)
-                        thmproc_odd = workarea
-                        + os.path.splitext(os.path.basename(inputfile))[0]
-                        + '.UPCoutput.raw.odd.cub'
-                        thmproc_even = workarea
-                        + os.path.splitext(os.path.basename(inputfile))[0]
-                        + '.UPCoutput.raw.even.cub'
+                        thmproc_odd = str(workarea) + str(os.path.splitext(os.path.basename(inputfile))[0]) + '.UPCoutput.raw.odd.cub'
+                        thmproc_even = str(workarea) + str(os.path.splitext(os.path.basename(inputfile))[0]) + '.UPCoutput.raw.even.cub'
                     elif item == 'handmos':
                         processOBJ.updateParameter('from_', thmproc_even)
                         processOBJ.updateParameter('mosaic', thmproc_odd)
@@ -226,13 +223,16 @@ def main():
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', outfile)
 
+                    pwd = os.getcwd()
                     # iterate through functions listed in process obj
                     for k, v in processOBJ.getProcess().items():
                         # load a function into func
                         func = getattr(isis, k)
                         try:
+                            os.chdir(workarea)
                             # execute function
                             func(**v)
+                            os.chdir(pwd)
                             if item == 'handmos':
                                 if os.path.isfile(thmproc_odd):
                                     os.rename(thmproc_odd, infile)
@@ -263,15 +263,27 @@ def main():
             # keyword definitions
             keywordsOBJ = None
             if status.lower() == 'success':
-                keywordsOBJ = UPCkeywords(caminfoOUT)
+                try:
+                    keywordsOBJ = UPCkeywords(caminfoOUT)
+                except:
+                    with open(caminfoOUT,'r') as f:
+                        filedata = f.read()
+
+                    filedata = filedata.replace(';', '-')
+                    filedata = re.sub(r'\-\s+',r'',filedata, flags=re.M)
+
+                    with open(caminfoOUT,'w') as f:
+                        f.write(filedata)
+
+                    keywordsOBJ = UPCkeywords(caminfoOUT)
+                target_Qobj = session.query(upc_models.Targets).filter(
+                    upc_models.Targets.targetname == keywordsOBJ.getKeyword('TargetName').upper()).first()
+
+                instrument_Qobj = session.query(upc_models.Instruments).filter(
+                    upc_models.Instruments.instrument == keywordsOBJ.getKeyword('InstrumentId')).first()
+
                 if session.query(upc_models.DataFiles).filter(
                         upc_models.DataFiles.isisid == keywordsOBJ.getKeyword('IsisId')).first() == None:
-
-                    target_Qobj = session.query(upc_models.Targets).filter(
-                        upc_models.Targets.targetname == keywordsOBJ.getKeyword('TargetName').upper()).first()
-
-                    instrument_Qobj = session.query(upc_models.Instruments).filter(
-                        upc_models.Instruments.instrument == keywordsOBJ.getKeyword('InstrumentId')).first()
 
                     test_input = upc_models.DataFiles(
                         isisid=keywordsOBJ.getKeyword('IsisId'),
@@ -288,6 +300,7 @@ def main():
                     upc_models.DataFiles.isisid == keywordsOBJ.getKeyword('IsisId')).first()
 
                 UPCid = Qobj.upcid
+                print(UPCid)
                 # block to add band information to meta_bands
                 if isinstance(infile_bandlist, list):
                     index = 0
@@ -296,22 +309,90 @@ def main():
                         session.merge(B_DBinput)
                         index = index + 1
                 else:
-                    B_DBinput = upc_models.MetaBands(upcid=UPCid, filter=infile_bandlist, centerwave=float(infile_centerlist[0]))
+                    try:
+                        # If infile_centerlist is in "Units" format, grab the value
+                        f_centerlist = float(infile_centerlist[0])
+                    except TypeError:
+                        f_centerlist = float(infile_centerlist)
+                    B_DBinput = upc_models.MetaBands(upcid=UPCid, filter=infile_bandlist, centerwave=f_centerlist)
                     session.merge(B_DBinput)
                 session.commit()
 
-                #  Block to add common keywords
-                # @TODO refactor this to use keywords from database instead of
-                #  keyword definition file
+                # Block to add common keywords
+                testjson = json.load(
+                    open(keyword_def, 'r'))
+                for element_1 in testjson['instrument']['COMMON']:
+                    keyvalue = ""
+                    keytype = testjson['instrument']['COMMON'][element_1]['type']
+                    keyword = testjson['instrument']['COMMON'][element_1]['keyword']
+                    keyword_Qobj = session.query(upc_models.Keywords).filter(
+                        and_(upc_models.Keywords.typename == element_1,
+                             upc_models.Keywords.instrumentid == 3)).first()
+
+                    if keyword_Qobj is None:
+                        continue
+                    else:
+                        keyvalue = keywordsOBJ.getKeyword(keyword)
+                    if keyvalue is None:
+                        continue
+                    keyvalue = db2py(keytype, keyvalue)
+                    try:
+                        DBinput = upc_models.create_table(keytype,
+                                                    upcid=UPCid,
+                                                    typeid=keyword_Qobj.typeid,
+                                                    value=keyvalue)
+                    except Exception as e:
+                        print(e)
+                        continue
+                    session.merge(DBinput)
+                    try:
+                        session.flush()
+                    except Exception as e:
+                        print(e)
+                session.commit()
+                 
+                for element_1 in testjson['instrument'][archive]:
+                    keyvalue = ""
+                    keytype = testjson['instrument'][archive][element_1]['type']
+                    keyword = testjson['instrument'][archive][element_1]['keyword']
+                    keyword_Qobj = session.query(upc_models.Keywords).filter(
+                        and_(upc_models.Keywords.typename == element_1,
+                             upc_models.Keywords.instrumentid.in_((3, instrument_Qobj.instrumentid)))).first()
+
+                    if keyword_Qobj is None:
+                        continue
+                    else:
+                        keyvalue = keywordsOBJ.getKeyword(keyword)
+                    if keyvalue is None:
+                        continue
+                    keyvalue = db2py(keytype, keyvalue)
+                    try:
+                        DBinput = upc_models.create_table(keytype,
+                                                    upcid=UPCid,
+                                                    typeid=keyword_Qobj.typeid,
+                                                    value=keyvalue)
+                    except Exception as e:
+                        print(e)
+                        continue
+                    session.merge(DBinput)
+                    try:
+                        session.flush()
+                    except Exception as e:
+                        print(e)
+                session.commit()
+                              
+                # Block to add instrument specific keywords
+                """
                 keywords = session.query(upc_models.Keywords).filter(
-                    upc_models.Keywords.instrumentid.in_((3, instrument_Qobj.instrumentid))).all()
+                    upc_models.Keywords.instrumentid == instrument_Qobj.instrumentid).all()
 
                 for row in keywords:
                     keytype = row.datatype
                     keyword = row.typename
                     val = keywordsOBJ.getKeyword(keyword.lower())
                     keyword_Qobj = session.query(upc_models.Keywords).filter(
-                        upc_models.Keywords.typename == keyword).first()
+                        and_(upc_models.Keywords.typename == keyword,
+                             upc_models.Keywords.instrumentid.in_((3, instrument_Qobj.instrumentid)))).first()
                     val = db2py(keytype, val)
                     if val is None:
                         continue
@@ -320,7 +401,9 @@ def main():
                                                         typeid=keyword_Qobj.typeid,
                                                         value=val)
                     session.merge(DBinput)
+                    session.flush()
                 session.commit()
+                """
                 # geometry stuff
                 G_centroid = 'point ({} {})'.format(
                     str(keywordsOBJ.getKeyword('CentroidLongitude')),
@@ -335,6 +418,7 @@ def main():
                 session.merge(G_DBinput)
                 G_DBinput = upc_models.MetaGeometry(upcid=UPCid, typeid=G_footprint_Qobj, value=G_footprint)
                 session.merge(G_DBinput)
+                session.flush()
                 session.commit()
                 """
                 CScmd = 'md5sum ' + inputfile
@@ -447,58 +531,69 @@ def main():
                                 ['Instrument']
                                 ['InstrumentId'])).first()
 
+                        if target_Qobj is None or instrument_Qobj is None:
+                            continue
+
                         error2_input = upc_models.DataFiles(isisid=isisSerial,
                                                  productid=label['IsisCube']['Archive']['ProductId'],
                                                  edr_source=EDRsource,
                                                  instrumentid=instrument_Qobj.instrumentid,
                                                  targetid=target_Qobj.targetid)
-                    session.merge(error2_input)
                     session.commit()
 
-                    EQ2obj = session.query(upc_models.DataFiles).filter(
-                        upc_models.DataFiles.isisid == isisSerial).first()
-                    UPCid = EQ2obj.upcid
-                    errorMSG = 'Error running {} on file {}'.format(
-                        processError, inputfile)
+                    try:
+                        EQ2obj = session.query(upc_models.DataFiles).filter(
+                            upc_models.DataFiles.isisid == isisSerial).first()
+                        UPCid = EQ2obj.upcid
+                        errorMSG = 'Error running {} on file {}'.format(
+                            processError, inputfile)
 
-                    DBinput = MetaTime(upcid=UPCid,
-                                    typeid=proc_date_tid,
-                                    value=date)
-                    session.merge(DBinput)
+                        DBinput = MetaTime(upcid=UPCid,
+                                        typeid=proc_date_tid,
+                                        value=date)
+                        session.merge(DBinput)
 
-                    DBinput = MetaString(upcid=UPCid,
-                                        typeid=err_type_tid,
-                                        value=processError)
-                    session.merge(DBinput)
+                        DBinput = MetaString(upcid=UPCid,
+                                            typeid=err_type_tid,
+                                            value=processError)
+                        session.merge(DBinput)
 
-                    DBinput = MetaString(upcid=UPCid,
-                                        typeid=err_msg_tid,
-                                        value=errorMSG)
-                    session.merge(DBinput)
+                        DBinput = MetaString(upcid=UPCid,
+                                            typeid=err_msg_tid,
+                                            value=errorMSG)
+                        session.merge(DBinput)
 
-                    DBinput = MetaBoolean(upcid=UPCid,
-                                          typeid=err_flag_tid,
-                                          value=True)
-                    session.merge(DBinput)
+                        DBinput = MetaBoolean(upcid=UPCid,
+                                            typeid=err_flag_tid,
+                                            value=True)
+                        session.merge(DBinput)
 
-                    DBinput = MetaGeometry(upcid=UPCid,
-                                        typeid=isis_footprint_tid,
-                                        value='POINT(361 0)')
-                    session.merge(DBinput)
+                        DBinput = MetaGeometry(upcid=UPCid,
+                                            typeid=isis_footprint_tid,
+                                            value='POINT(361 0)')
+                        session.merge(DBinput)
 
-                    DBinput = MetaGeometry(upcid=UPCid,
-                                        typeid=isis_centroid_tid,
-                                        value='POINT(361 0)')
-                    session.merge(DBinput)
+                        DBinput = MetaGeometry(upcid=UPCid,
+                                            typeid=isis_centroid_tid,
+                                            value='POINT(361 0)')
+                        session.merge(DBinput)
+                    except:
+                        pass
 
                     try:
                         v = label['IsisCube']['Instrument']['StartTime']
                     except KeyError:
                         v = None
-                    DBinput = MetaTime(upcid=UPCid,
-                                    typeid=start_time_tid,
-                                    value=v)
-                    session.merge(DBinput)
+                    except:
+                        continue
+
+                    try:
+                        DBinput = MetaTime(upcid=UPCid,
+                                        typeid=start_time_tid,
+                                        value=v)
+                        session.merge(DBinput)
+                    except:
+                        continue
 
                     try:
                         v = label['IsisCube']['Instrument']['StopTime']

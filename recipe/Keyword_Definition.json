@@ -131,13 +131,13 @@
         "type": "string",
         "displayname": "Spacecraft Clock Start Count",
         "group": "Archive",
-        "keyword": "SpacecraftClockStartCount"
+        "keyword": "Spacecraft_Clock_Start_Count"
       },
       "spacecraftclockstopcount": {
         "type": "string",
         "displayname": "Spacecraft Clock Stop Count",
         "group": "Archive",
-        "keyword": "pacecraftClockStopCount"
+        "keyword": "Spacecraft_Clock_Stop_Count"
       },
       "exposureduration": {
         "type": "double",
@@ -403,7 +403,7 @@
         "group": "Geometry",
         "keyword": "UpperRightLongitude"
       },
-      "LowerLeftLatitude": {
+      "lowerleftlatitude": {
         "type": "double",
         "displayname": "Lower Left Latitude",
         "group": "Geometry",
@@ -584,9 +584,14 @@
         "displayname": "CTX Identifier",
         "group": "OriginalLabel",
         "keyword": "DATA_SET_ID"  
-      }
+      },
+	"exposureduration":{
+	    "type": "double",
+	    "displayname": "Exposure Duration",
+	    "keyword": "line_exposure_duration"
+	}
     },
-        "mro_hirise": {
+        "mro_hirise_edr": {
             "statsbandfilter": {
                 "type": "string",
                 "displayname": "Band Filter Used For Statistics",

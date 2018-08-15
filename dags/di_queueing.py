@@ -34,13 +34,6 @@ def queue_items(ds, **kwargs):
                 rq.QueueAdd(f.filename)
     return 0
 
-# 1: connect to db
-# 2: pop n items from queue
-# 3: query db for each filename
-# 4: hash file
-# 5: test new checksum == old checksum
-# 6: commit
-
 session, _ = db_connect('pdsdi_dev')
 rq = RedisQueue('DI_ReadyQueue')
 

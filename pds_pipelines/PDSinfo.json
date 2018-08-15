@@ -9,7 +9,8 @@
     },
     "cassini_iss": {
         "archiveid": "53",
-        "path": "/pds_san/PDS_Archive/Cassini/ISS/"
+        "path": "/pds_san/PDS_Archive/Cassini/ISS/",
+	"bandbinQuery": "FilterName"
     },
     "cassini_radar": {
         "archiveid": "51",
@@ -100,11 +101,13 @@
     },
     "mro_hirise": {
         "archiveid": "71",
-        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/"
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/",
+	"bandbinQuery": "Name"
     },
     "mro_hirise_edr": {
         "archiveid": "124",
-        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/"
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/EDR/",
+	"bandbinQuery": "Name"
     },
     "mro_hirise_extras": {
         "archiveid": "126",
@@ -117,7 +120,8 @@
     "mro_marci": {
         "archiveid": "17",
         "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/MARCI/",
-        "mission": "MARCI"
+        "mission": "MARCI",
+	"bandbinQuery": "FilterName"
     },
     "phoenix": {
         "archiveid": "9",

@@ -5,7 +5,9 @@ import sys
 import pvl
 
 
-def find_keyword(obj, key):
+def find_keyword(obj, key, group=None):
+    if group is not None:
+        return find_keyword(obj[group], key)
     if key is None or obj is None:
         return None
     elif key in obj:
@@ -29,14 +31,11 @@ class UPCkeywords(object):
     def __init__(self, pvlfile):
         self.label = lower_keys(pvl.load(pvlfile))
 
+
+    def __str__(self):
+        return(str(self.label))
+
+
     def getKeyword(self, keyword):
         Gkey = find_keyword(self.label, keyword.lower())
-        return Gkey
-
-    def getPolygonKeyword(self, keyword):
-
-        get1 = find_keyword(self.label, 'Polygon')
-        Gkey = find_keyword(get1, keyword)
-        if keyword == 'CentroidRadius':
-            Gkey = Gkey[0]
         return Gkey

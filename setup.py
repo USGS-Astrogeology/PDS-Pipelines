@@ -6,7 +6,7 @@ setup(
 
     url='https://github.com/USGS-Astrogeology/PDS-Pipelines',
 
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'products']),
 
     project_urls={  # Optional
         'Source': 'https://github.com/USGS-Astrogeology/PDS-Pipelines'

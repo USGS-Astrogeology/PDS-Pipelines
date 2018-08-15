@@ -31,6 +31,7 @@ def main():
         voldesc = load_pvl(inputfile)
         dataset_id = voldesc['VOLUME']['DATA_SET_ID']
         volume_id = voldesc['VOLUME']['VOLUME_ID']
+        # if more than one dataset id exists, link each of them
         if isinstance(dataset_id, (list, tuple, set)):
             [link(link_src_path, link_dest_path, volume_id, x) for x in dataset_id]
         else:
