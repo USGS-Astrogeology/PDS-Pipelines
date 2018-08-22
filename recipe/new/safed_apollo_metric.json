@@ -1,0 +1,15 @@
+{
+    "inst": "safed_apollo_metric",
+    "upc": {
+        "recipe": {}
+    },
+    "pow": {
+        "recipe": {}
+    },
+    "reduced": {
+        "recipe": {}
+    },
+    "projected": {
+        "recipe": {}
+    }
+}

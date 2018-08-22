@@ -1,0 +1,119 @@
+{
+    "inst": "mo_themis_ODTSDP_V1",
+    "upc": {
+        "recipe": {
+            "thm2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "cubeatt": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cknadir": "yes",
+                "cksmithed": "yes"
+            },
+            "footprintinit": {
+                "from_": "value",
+                "increaseprecision": "yes",
+                "inctype": "vertices",
+                "numvertices": "40"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "yes",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "100",
+                "sinc": "100",
+                "uselabel": "yes",
+                "spice": "no"
+            }
+        }
+    },
+    "pow": {
+        "recipe": {
+            "thm2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "cubeatt": {
+                "from_": "value",
+                "to": "value"
+            },
+            "cam2map": {
+                "from": "value",
+                "to": "value",
+                "map": "value",
+                "matchmap": "no",
+                "pixres": "value",
+                "defaultrange": "value"
+            }
+        }
+    },
+    "reduced": {
+        "recipe": {
+            "thm2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "cubeatt": {
+                "from_": "value",
+                "to": "value"
+            },
+            "reduce": {
+                "from_": "value",
+                "to": "value",
+                "algorithm": "average",
+                "mode": "scale",
+                "sscale": "value",
+                "lscale": "value",
+                "validper": "1",
+                "vper_replace": "nearest"
+            },
+            "isis2std": {
+                "from_": "value",
+                "to": "value",
+                "format": "jpeg",
+                "quality": "60",
+                "stretch": "linear"
+            }
+        },
+	"browse": {
+	    "minlines": "200",
+	    "minsamples": "200",
+	    "maxlines": "900",
+	    "maxsamples": "900"
+	},
+	"thumbnail": {
+	    "minlines": "50",
+	    "minsamples": "50",
+	    "maxlines": "300",
+	    "maxsamples": "300"
+	}
+    },
+    "projected": {
+        "recipe": {
+            "thm2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "cubeatt": {
+                "from_": "value",
+                "to": "value"
+            },
+            "isis2std": {
+                "from_": "value",
+                "to": "value",
+                "format": "jpeg",
+                "quality": "60",
+                "stretch": "linear"
+            }
+        }
+    }
+}

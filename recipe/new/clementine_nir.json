@@ -1,0 +1,111 @@
+{
+    "inst": "clementine_nir",
+    "upc": {
+        "recipe": {
+            "mroctx2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "yes",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "100",
+                "sinc": "100",
+                "polygon": "yes",
+                "pixinc": "100",
+                "maxemission": "89.5",
+                "maxincidence": "120.0",
+                "spice": "no"
+            }
+        }
+    },
+    "pow": {
+        "recipe": {
+            "mroctx2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "yes",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "100",
+                "sinc": "100",
+                "polygon": "yes",
+                "pixinc": "100",
+                "maxemission": "89.5",
+                "maxincidence": "120.0",
+                "spice": "no"
+            }
+        }
+    },
+    "reduced": {
+        "recipe": {
+            "mroctx2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "yes",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "100",
+                "sinc": "100",
+                "polygon": "yes",
+                "pixinc": "100",
+                "maxemission": "89.5",
+                "maxincidence": "120.0",
+                "spice": "no"
+            }
+        },
+	"browse": {
+	    "minlines": "200",
+	    "minsamples": "200",
+	    "maxlines": "900",
+	    "maxsamples": "900"
+	},
+	"thumbnail": {
+	    "minlines": "50",
+	    "minsamples": "55",
+	    "maxlines": "300",
+	    "maxsamples": "300"
+	}
+    },
+    "projected": {
+        "recipe": {
+            "mroctx2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "yes",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "100",
+                "sinc": "100",
+                "polygon": "yes",
+                "pixinc": "100",
+                "maxemission": "89.5",
+                "maxincidence": "120.0",
+                "spice": "no"
+            }
+        }
+    }
+}

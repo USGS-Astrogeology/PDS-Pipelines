@@ -1,0 +1,124 @@
+{
+    "inst": "mro_marci",
+    "upc": {
+        "recipe": {
+            "marci2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cksmithed": "yes"
+            },
+            "marcical": {
+                "from_": "value",
+                "to": "value",
+                "iof": "no"
+            },
+            "handmos": {
+                "from_": "value",
+                "mosaic": "value"
+            },
+            "cubeatt": {
+                "from_": "value",
+                "to": "value"
+            },
+            "footprintinit": {
+                "from_": "value",
+                "increaseprecision": "yes",
+                "linc": "700",
+                "sinc": "500"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "no",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "100",
+                "sinc": "100",
+                "uselabel": "yes"
+            }
+        }
+    },
+    "pow": {
+        "recipe": {
+            "marci2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cksmithed": "yes"
+            }
+        }
+    },
+    "reduced": {
+        "recipe": {
+            "marci2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cksmithed": "yes"
+            },
+            "reduce": {
+                "from_": "value",
+                "to": "value",
+                "algorithm": "average",
+                "mode": "scale",
+                "sscale": "value",
+                "lscale": "value",
+                "validper": "1",
+                "vper_replace": "nearest"
+            },
+            "isis2std": {
+                "red": "value",
+                "green": "value",
+                "blue": "value",
+                "to": "value",
+                "mode": "rgb",
+                "format": "tiff",
+                "minpercent": "0.0",
+                "maxpercent": "100.0"
+            }
+        },
+	"browse": {
+	    "minlines": "200",
+	    "minsamples": "200",
+	    "maxlines": "900",
+	    "maxsamples": "900"
+	},
+	"thumbnail": {
+	    "minlines": "50",
+	    "minsamples": "50",
+	    "maxlines": "300",
+	    "maxsamples": "300"
+	}
+    },
+    "projected": {
+        "recipe": {
+            "marci2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cksmithed": "yes"
+            },
+            "isis2std": {
+                "red": "value",
+                "green": "value",
+                "blue": "value",
+                "to": "value",
+                "mode": "rgb",
+                "format": "tiff",
+                "minpercent": "0.0",
+                "maxpercent": "100.0"
+            }
+        }
+    }
+}

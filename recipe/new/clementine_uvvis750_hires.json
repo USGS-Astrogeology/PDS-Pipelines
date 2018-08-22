@@ -1,0 +1,35 @@
+{
+    "inst": "clementine_uvvis750_hires",
+    "upc": {
+        "recipe": {}
+    },
+    "pow": {
+        "recipe": {
+		"clem2isis": {
+		    "from_": "value",
+		    "to": "value"
+		},    
+		"spiceinit": {
+		    "from_": "value"
+		},
+		"clemhirescal": {
+		    "from_": "value",
+		    "to": "value"
+		},
+		"cam2map": {
+		    "from_": "value",
+		    "to": "value",
+		    "map": "value",
+		    "matchmap": "no",
+		    "pixres": "value",
+		    "defaultrange": "value"
+		}
+    	}    
+    },
+    "reduced": {
+        "recipe": {}
+    },
+    "projected": {
+        "recipe": {}
+    }
+}

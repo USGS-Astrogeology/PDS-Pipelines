@@ -1,0 +1,28 @@
+{
+    "inst": "mo_themis_ir_rdr",
+    "upc": {
+        "recipe": {}
+    },
+    "pow": {
+        "recipe": {
+            "thm2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "cam2map": {
+                "from": "value",
+                "to": "value",
+                "map": "value",
+                "matchmap": "no",
+                "pixres": "value",
+                "defaultrange": "value"
+            }
+        }
+    },
+    "reduced": {
+        "recipe": {}
+    },
+    "projected": {
+        "recipe": {}
+    }
+}

@@ -1,0 +1,163 @@
+{
+    "apollo_metric": {
+        "archiveid": "97",
+        "path": "/pds_san/PDS_Archive/Apollo/Metric_Camera/"
+    },
+    "apollo_rock": {
+        "archiveid": "101",
+        "path": "/pds_san/PDS_Archive/Apollo/Rock_Sample_Images/"
+    },
+    "cassini_iss": {
+        "archiveid": "53",
+        "path": "/pds_san/PDS_Archive/Cassini/ISS/",
+	"bandbinQuery": "FilterName"
+    },
+    "cassini_radar": {
+        "archiveid": "51",
+        "path": "/pds_san/PDS_Archive/Cassini/RADAR/"
+    },
+    "cassini_vims": {
+        "archiveid": "75",
+        "path": "/pds_san/PDS_Archive/Cassini/VIMS/"
+    },
+    "chandrayaan_m3": {
+        "archiveid": "104",
+        "path": "/pds_san/PDS_Archive/Chandrayaan_1/M3/"
+    },
+    "clementine": {
+        "archiveid": "50",
+        "path": "/pds_san/PDS_Archive/Clementine/"
+    },
+    "dawn_ceres": {
+        "archiveid": "123",
+        "path": "/pds_san/PDS_Archive/Dawn/Ceres/"
+    },
+    "dawn_vesta": {
+        "archiveid": "119",
+        "path": "/pds_san/PDS_Archive/Dawn/Vesta/"
+    },
+    "galileo_nims": {
+        "archiveid": "24",
+        "path": "/pds_san/PDS_Archive/Galileo/NIMS/"
+    },
+    "galileo_ssi_edr": {
+        "archiveid": "25",
+        "path": "/pds_san/PDS_Archive/Galileo/SSI/"
+    },
+    "kaguya_lism": {
+        "archiveid": "92",
+        "path": "/pds_san/PDS_Safed/Data/Kaguya/LISM/"
+    },
+    "lcross": {
+        "archiveid": "38",
+        "path": "/pds_san/PDS_Archive/LCROSS/"
+    },
+    "lroLAMP": {
+        "archiveid": "84",
+        "path": "/pds_san/PDS_Archive/Lunar_Reconnaissance_Orbiter/LAMP/"
+    },
+    "lro_lroc_edr": {
+        "archiveid": "74",
+        "path": "/pds_san/PDS_Archive/Lunar_Reconnaissance_Orbiter/LROC/EDR/",
+	"bandbinQuery" : "FilterName"
+    },
+    "lunar_orbiter": {
+        "archiveid": "79",
+        "path": "/pds_san/PDS_Archive/Lunar_Orbiter/"
+    },
+    "magellan": {
+        "archiveid": "27",
+        "path": "/pds_san/PDS_Archive/Magellan/"
+    },
+    "map_a_planet": {
+        "archiveid": "41",
+        "path": "/pds_san/PDS_Derived/Map_A_Planet/"
+    },
+    "mariner_10": {
+        "archiveid": "46",
+        "path": "/pds_san/PDS_Archive/Mariner_10/"
+    },
+    "mars_pathfinder": {
+        "archiveid": "18",
+        "path": "/pds_san/PDS_Archive/Mars_Pathfinder/"
+    },
+    "mars_express": {
+        "archiveid": "78",
+        "path": "/pds_san/PDS_Archive/Mars_Express/"
+    },
+    "messenger": {
+        "archiveid": "14",
+        "path": "/pds_san/PDS_Archive/MESSENGER/"
+    },
+    "mgs_moc": {
+        "archiveid": "44",
+        "path": "/pds_san/PDS_Archive/Mars_Global_Surveyor/MOC/"
+    },
+    "mro_ctx": {
+        "archiveid": "16",
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/CTX/",
+        "mission": "CTX",
+	"bandbinQuery" : "FilterName"
+    },
+    "mro_hirise": {
+        "archiveid": "71",
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/",
+	"bandbinQuery": "Name"
+    },
+    "mro_hirise_edr": {
+        "archiveid": "124",
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/",
+	"bandbinQuery": "Name"
+    },
+    "mro_hirise_extras": {
+        "archiveid": "126",
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/"
+    },
+    "mro_hirise_rdr": {
+        "archiveid": "125",
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/"
+    },
+    "mro_marci": {
+        "archiveid": "17",
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/MARCI/",
+        "mission": "MARCI",
+	"bandbinQuery": "FilterName"
+    },
+    "phoenix": {
+        "archiveid": "9",
+        "path": "/pds_san/PDS_Archive/Phoenix/"
+    },
+    "mo_themis_geo": {
+        "archiveid": "118",
+        "path": "/pds_san/PDS_Archive/Mars_Odyssey/THEMIS/USA_NASA_PDS_ODTGEO_200XX/"
+    },
+    "mo_themis_ir_edr": {
+        "bandorder": ["9", "8", "7", "6", "5", "4", "3", "2", "1"],
+        "archiveid": "116",
+	"UPCerrorSpacecraft": "MARS_ODYSSEY",
+        "UPCerrorInstrument": "THEMIS_IR",
+        "path": "/pds_san/PDS_Archive/Mars_Odyssey/THEMIS/USA_NASA_PDS_ODTSDP_100XX/",
+        "bandbinQuery": "FilterNumber"
+    },
+    "mo_themis_vis_edr": {
+	"archiveid" : "117",
+         "path" : "/pds_san/PDS_Archive/Mars_Odyssey/THEMIS/USA_NASA_PDS_ODTSDP_100XX/",
+         "UPCerrorSpacecraft": "MARS_ODYSSEY",
+         "UPCerrorInstrument": "THEMIS_VIS",
+         "bandbinQuery" : "FilterNumber",
+         "bandorder" : ["3", "2", "5", "4", "1"]
+
+    },
+    "viking_lander": {
+        "archiveid": "7",
+        "path": "/pds_san/PDS_Archive/Viking_Lander/"
+    },
+    "viking_orbiter": {
+        "archiveid": "3",
+        "path": "/pds_san/PDS_Archive/Viking_Orbiter/"
+    },
+    "voyager": {
+        "archiveid": "30",
+        "path": "/pds_san/PDS_Archive/Voyager/"
+    }
+}

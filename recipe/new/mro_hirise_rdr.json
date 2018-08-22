@@ -1,0 +1,71 @@
+{
+    "inst": "mro_hirise_rdr_esp",
+    "upc": {
+        "recipe": {
+            "pds2isis": {
+                "from_": "value",
+                "to": "value"
+            }
+        }
+    },
+    "pow": {
+        "recipe": {
+            "pds2isis": {
+                "from_": "value",
+                "to": "value"
+            }
+        }
+    },
+    "reduced": {
+        "recipe": {
+            "pds2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "reduce": {
+                "from_": "value",
+                "to": "value",
+                "algorithm": "average",
+                "mode": "scale",
+                "sscale": "value",
+                "lscale": "value",
+                "validper": "1",
+                "vper_replace": "nearest"
+            },
+            "isis2std": {
+                "from_": "value",
+                "to": "value",
+                "format": "jpeg",
+                "quality": "60",
+                "stretch": "linear"
+            }
+        },
+	"browse": {
+	    "minlines": "100",
+	    "minsamples": "100",
+	    "maxlines": "900",
+	    "maxsamples": "900"
+	},
+	"thumbnail": {
+	    "minlines": "50",
+	    "minsamples": "50",
+	    "maxlines": "300",
+	    "maxsamples": "300"
+	}
+    },
+    "projected": {
+        "recipe": {
+            "pds2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "isis2std": {
+                "from_": "value",
+                "to": "value",
+                "format": "jpeg",
+                "quality": "60",
+                "stretch": "linear"
+            }
+        }
+    }
+}

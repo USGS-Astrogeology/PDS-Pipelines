@@ -1,0 +1,55 @@
+{
+    "inst": "pow_process",
+    "upc": {
+        "recipe": {
+            "maptemplate": {
+                "map": "value",
+                "projection": "value"
+            },
+            "edrget": {
+                "url": "value",
+                "topath": "value"
+            },
+            "cubeatt": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "ckpredicted": "yes",
+                "cknadir": "yes"
+            },
+            "stretch": {
+                "from_": "value",
+                "to": "value",
+                "usepercentages": "yes",
+                "pairs": "value"
+            },
+            "cam2map": {
+                "from_": "value",
+                "to": "value",
+                "map": "value",
+                "matchmap": "no",
+                "pixres": "value",
+                "defaultrange": "camera",
+                "minlat": "value",
+                "maxlat": "value",
+                "minlon": "value",
+                "maxlon": "value",
+                "trim": "yes"
+            },
+            "grid": {
+                "from_": "value",
+                "to": "value"
+            },
+            "isis2pds": {
+                "from_": "value",
+                "to": "value",
+                "bittype": "value"
+            }
+        }
+    },
+
+    "reduced": {},
+    "projected": {}
+}

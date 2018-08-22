@@ -1,0 +1,137 @@
+{
+    "inst": "cassini_iss_edr",
+    "upc": {
+        "recipe": {
+            "ciss2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cknadir": "yes",
+                "cksmithed": "yes"
+            },
+            "footprintinit": {
+                "from_": "value",
+                "increaseprecision": "yes",
+                "inctype": "vertices",
+                "numvertices": "40",
+                "maxemission": "89.5",
+                "maxincidence": "120.0"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "yes",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "10",
+                "sinc": "10",
+                "polygon": "yes",
+                "inctype": "vertices",
+                "increaseprecision": "yes",
+                "numvertices": "40",
+                "maxemission": "89.5",
+                "maxincidence": "120.0",
+                "spice": "no"
+            }
+        }
+    },
+    "pow": {
+        "recipe": {
+            "ciss2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cknadir": "yes",
+                "cksmithed": "yes"
+            },
+            "cisscal": {
+                "from_": "value",
+                "to": "value"
+            },
+            "cam2map": {
+                "from": "value",
+                "to": "value",
+                "map": "value",
+                "matchmap": "no",
+                "pixres": "value",
+                "defaultrange": "value"
+            }
+        }
+    },
+    "reduced": {
+        "recipe": {
+            "ciss2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cknadir": "yes",
+                "cksmithed": "yes"
+            },
+            "cisscal": {
+                "from_": "value",
+                "to": "value"
+            },
+            "reduce": {
+                "from_": "value",
+                "to": "value",
+                "algorithm": "average",
+                "mode": "scale",
+                "sscale": "value",
+                "lscale": "value",
+                "validper": "1",
+                "vper_replace": "nearest"
+            },
+            "isis2std": {
+                "from_": "value",
+                "to": "value",
+                "format": "jpeg",
+                "quality": "60",
+                "stretch": "linear"
+            }
+        },
+	"browse": {
+	    "minlines": "200",
+	    "minsamples": "200",
+	    "maxlines": "900",
+	    "maxsamples": "900"
+	},
+	"thumbnail": {
+	    "minlines": "50",
+	    "minsamples": "50",
+	    "maxlines": "300",
+	    "maxsamples": "300"
+	}
+    },
+    "projected": {
+        "recipe": {
+            "ciss2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cknadir": "yes",
+                "cksmithed": "yes"
+            },
+            "cisscal": {
+                "from_": "value",
+                "to": "value"
+            },
+            "isis2std": {
+                "from_": "value",
+                "to": "value",
+                "format": "jpeg",
+                "quality": "60",
+                "stretch": "linear"
+            }
+        }
+    }
+}

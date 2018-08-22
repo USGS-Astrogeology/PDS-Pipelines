@@ -1,0 +1,132 @@
+{
+    "inst": "mars_express_rdr",
+    "upc": {
+        "recipe": {
+            "hrsc2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cksmithed": "yes",
+                "ckrecon": "yes",
+                "ckpredicted": "yes",
+                "cknadir": "no"
+            },
+            "footprintinit": {
+                "from_": "value",
+                "increaseprecision": "yes",
+                "inctype": "vertices",
+                "numvertices": "40",
+                "maxemission": "89.5",
+                "maxincidence": "120.0"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "no",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "100",
+                "sinc": "100",
+                "polygon": "yes",
+                "inctype": "vertices",
+                "numvertices": "40",
+                "maxemission": "89.5",
+                "maxincidence": "120.0",
+                "spice": "no"
+            }
+        }
+    },
+    "pow": {
+        "recipe": {
+            "hrsc2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cksmithed": "yes",
+                "ckrecon": "yes",
+                "ckpredicted": "yes",
+                "cknadir": "no"
+            },
+            "cam2map": {
+                "from": "value",
+                "to": "value",
+                "map": "value",
+                "matchmap": "no",
+                "pixres": "value",
+                "defaultrange": "value"
+            }
+        }
+    },
+    "reduced": {
+        "recipe": {
+            "hrsc2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cksmithed": "yes",
+                "ckrecon": "yes",
+                "ckpredicted": "yes",
+                "cknadir": "no"
+            },
+            "reduce": {
+                "from_": "value",
+                "to": "value",
+                "algorithm": "average",
+                "mode": "scale",
+                "sscale": "value",
+                "lscale": "value",
+                "validper": "1",
+                "vper_replace": "nearest"
+            },
+            "isis2std": {
+                "from_": "value",
+                "to": "value",
+                "format": "jpeg",
+                "quality": "60",
+                "stretch": "linear"
+            }
+        },
+	"browse": {
+	    "minlines": "200",
+	    "minsamples": "200",
+	    "maxlines": "900",
+	    "maxsamples": "900"
+	},
+	"thumbnail": {
+	    "minlines": "50",
+	    "minsamples": "50",
+	    "maxlines": "300",
+	    "maxsamples": "300"
+	}
+    },
+    "projected": {
+        "recipe": {
+            "hrsc2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "cksmithed": "yes",
+                "ckrecon": "yes",
+                "ckpredicted": "yes",
+                "cknadir": "no"
+            },
+            "isis2std": {
+                "from_": "value",
+                "to": "value",
+                "format": "jpeg",
+                "quality": "60",
+                "stretch": "linear"
+            }
+        }
+    }
+}

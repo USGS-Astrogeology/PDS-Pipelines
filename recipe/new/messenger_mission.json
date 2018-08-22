@@ -1,0 +1,112 @@
+{
+    "inst": "messenger_mission",
+    "upc": {
+        "recipe": {
+            "mdis2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "ckrecon": "yes",
+                "ckpredicted": "yes",
+                "spkrecon": "yes",
+                "spkpredicted": "yes"
+            },
+            "footprintinit": {
+                "from_": "value",
+                "increaseprecision": "yes",
+                "inctype": "vertices",
+                "numvertices": "40",
+                "maxemission": "89.5",
+                "maxincidence": "120.0"
+            },
+            "caminfo": {
+                "from_": "value",
+                "to": "value",
+                "geometry": "yes",
+                "isislabel": "yes",
+                "originallabel": "yes",
+                "statistics": "yes",
+                "camstats": "yes",
+                "linc": "10",
+                "sinc": "10",
+                "polygon": "yes",
+                "inctype": "vertices",
+                "numvertices": "40",
+                "maxemission": "89.5",
+                "maxincidence": "120.0",
+                "spice": "no"
+            }
+        }
+    },
+    "pow": {
+        "recipe": {
+            "mdis2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "ckrecon": "yes",
+                "ckpredicted": "yes",
+                "spkrecon": "yes",
+                "spkpredicted": "yes"
+            },
+	    "mdiscal": {
+            	"from_": "value",
+           	 "to": "value"
+            },
+            "cam2map": {
+		    "from_": "value",
+		    "to": "value",
+		    "map": "value",
+		    "matchmap": "no",
+		    "pixres": "value",
+		    "defaultrange": "value"
+            }
+        }
+    },
+    "reduced": {
+        "recipe": {
+            "mdis2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "ckrecon": "yes",
+                "ckpredicted": "yes",
+                "spkrecon": "yes",
+                "spkpredicted": "yes"
+            }
+        },
+	"browse": {
+	    "minlines": "200",
+	    "minsamples": "200",
+	    "maxlines": "900",
+	    "maxsamples": "900"
+	},
+	"thumbnail": {
+	    "minlines": "50",
+	    "minsamples": "50",
+	    "maxlines": "300",
+	    "maxsamples": "300"
+	}
+    },
+    "projected": {
+        "recipe": {
+            "mdis2isis": {
+                "from_": "value",
+                "to": "value"
+            },
+            "spiceinit": {
+                "from_": "value",
+                "ckrecon": "yes",
+                "ckpredicted": "yes",
+                "spkrecon": "yes",
+                "spkpredicted": "yes"
+            }
+        }
+    }
+}
