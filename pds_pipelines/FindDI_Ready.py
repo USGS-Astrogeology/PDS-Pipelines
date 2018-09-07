@@ -76,7 +76,7 @@ def archive_expired(session, archiveID, testing_date=None):
     return expired
 
 
-def volume_expired(session, archiveID, testing_date=None):
+def volume_expired(session, archiveID, volume, testing_date=None):
     """
     Checks to see if the volume is expired
     
@@ -96,7 +96,7 @@ def volume_expired(session, archiveID, testing_date=None):
 
         testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
 
-    volstr = '%' + args.volume + '%'
+    volstr = '%' + volume + '%'
     expired = session.query(Files).filter(Files.archiveid == archiveID,
                                           Files.filename.like(volstr)).filter(or_(
                                               cast(Files.di_date,
@@ -135,7 +135,7 @@ def main():
         testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
 
         if args.volume:
-            expired = volume_expired(session, archiveID, testing_date)
+            expired = volume_expired(session, archiveID, args.volume, testing_date)
             if expired.count():
                 print('Volume {} DI Ready: {} Files'.format(
                     args.volume, str(expired.count())))

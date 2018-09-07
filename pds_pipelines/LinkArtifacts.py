@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import pvl
 import json
@@ -17,7 +19,8 @@ def main():
 
         json_file_path = recipe_base + archive + '.json'
         try:
-            json_dict = json.load(json_file_path)
+            with open(json_file_path, 'r') as f:
+                json_dict = json.load(f)
         except(ValueError):
             continue
         link_src_path = json_dict['src']
@@ -46,8 +49,24 @@ def link(src_path, dest_path, volume_id, dataset_id):
     src = os.path.join(src_path, volume_id)
     dest = os.path.join(dest_path, dataset_id, volume_id)
     link_path = os.path.split(dest)
-    os.makedirs(link_path[0], exist_ok=True)
-    os.symlink(src, dest)
+    if os.path.exists(src):
+        os.makedirs(link_path[0], exist_ok=True)
+        try:
+            os.symlink(src, dest)
+        except FileExistsError:
+            return
+    else:
+        src = os.path.join(src_path, volume_id.lower())
+        dest = os.path.join(dest_path, dataset_id, volume_id.lower())
+        if os.path.exists(src):
+            os.makedirs(link_path[0], exist_ok=True)
+            try:
+                os.symlink(src, dest)
+            except FileExistsError:
+                return
+        else:
+            raise(OSError("Unable to locate a source directory for symlink with volume id {}".format(volume_id)))
+        
 
 
 def load_pvl(pvl_file_path):
