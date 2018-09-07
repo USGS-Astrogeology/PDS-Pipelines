@@ -119,8 +119,6 @@ def main():
 
     # Redis Queue Objects
     RQ_main = RedisQueue('UPC_ReadyQueue')
-    RQ_thumbnail = RedisQueue('Thumbnail_ReadyQueue')
-    RQ_browse = RedisQueue('Browse_ReadyQueue')
 
     proc_date_tid = get_tid('processdate', session)
     err_type_tid = get_tid('errortype', session)
@@ -219,14 +217,11 @@ def main():
                                     os.rename(outfile, infile)
                             status = 'success'
                             if '2isis' in item:
-                                RQ_thumbnail.QueueAdd((inputfile, fid, archive))
-                                RQ_browse.QueueAdd((inputfile, fid, archive))
                                 label = pvl.load(infile)
                                 infile_bandlist = label['IsisCube']['BandBin'][PDSinfoDICT[archive]['bandbinQuery']]
                                 infile_centerlist = label['IsisCube']['BandBin']['Center']
                             elif item == 'thmproc':
-                                RQ_thumbnail.QueueAdd((inputfile, fid, archive))
-                                RQ_browse.QueueAdd((inputfile, fid, archive))
+                                pass
                             elif item == 'handmos':
                                 label = pvl.load(infile)
                                 infile_bandlist = label['IsisCube']['BandBin'][PDSinfoDICT[archive]['bandbinQuery']]
