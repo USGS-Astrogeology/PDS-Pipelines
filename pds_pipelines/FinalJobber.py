@@ -48,6 +48,7 @@ def main():
         logger.info('HPC Cluster job Submission Starting')
         jobOBJ = HPCjob()
         jobOBJ.setJobName(FKey + '_Final')
+
         #jobOBJ.setStdOut('/usgs/cdev/PDS/output/' + FKey + '_%A_%a.out')
         #jobOBJ.setStdError('/usgs/cdev/PDS/output/' + FKey + '_%A_%a.err')
         jobOBJ.setStdOut(slurm_log + FKey + '_%A_%a.out')
