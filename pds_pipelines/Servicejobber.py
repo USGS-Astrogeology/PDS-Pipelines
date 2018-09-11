@@ -6,15 +6,14 @@ import pvl
 import lxml.etree as ET
 import logging
 
-from pds_pipelines.PDS_DBquery import *
-from pds_pipelines.RedisQueue import *
-from pds_pipelines.RedisHash import *
-from pds_pipelines.Recipe import *
-from pds_pipelines.MakeMap import *
-from pds_pipelines.HPCjob import *
+from pds_pipelines.PDS_DBquery import PDS_DBquery
+from pds_pipelines.RedisQueue import RedisQueue
+from pds_pipelines.RedisHash import RedisHash
+from pds_pipelines.Recipe import Recipe
+from pds_pipelines.Process import Process
+from pds_pipelines.MakeMap import MakeMap
+from pds_pipelines.HPCjob import HPCjob
 from pds_pipelines.config import recipe_dict
-
-import pdb
 
 
 class jobXML(object):
@@ -707,7 +706,7 @@ def main():
         if xmlOBJ.getMaxLon() is not None:
             mapOBJ.MaxLon(float(xmlOBJ.getMaxLon()))
 
-    testPVL = mapOBJ.Map2pvl()
+    mapOBJ.Map2pvl()
 
     MAPfile = directory + "/" + Key + '.map'
     mapOBJ.Map2File(MAPfile)
@@ -869,7 +868,7 @@ def main():
 
     for item in recipeOBJ.getProcesses():
         processOBJ = Process()
-        processR = processOBJ.ProcessFromRecipe(item, recipeOBJ.getRecipe())
+        processOBJ.ProcessFromRecipe(item, recipeOBJ.getRecipe())
 
         if item == 'cam2map':
 

@@ -10,14 +10,11 @@ import shutil
 from pysis import isis
 from pysis.exceptions import ProcessError
 
-from pds_pipelines.RedisQueue import *
-from pds_pipelines.RedisHash import *
-from pds_pipelines.Recipe import *
-from pds_pipelines.Loggy import *
-from pds_pipelines.SubLoggy import *
-
-
-import pdb
+from pds_pipelines.RedisQueue import RedisQueue
+from pds_pipelines.RedisHash import RedisHash
+from pds_pipelines.Process import Process
+from pds_pipelines.Loggy import Loggy
+from pds_pipelines.SubLoggy import SubLoggy
 
 
 def main():
@@ -45,7 +42,7 @@ def main():
         jobFile = RQ_file.Qfile2Qwork(
             RQ_file.getQueueName(), RQ_work.getQueueName())
 
-#******************** Setup system logging **********************
+        # Setup system logging
         basename = os.path.splitext(os.path.basename(jobFile))[0]
         logger = logging.getLogger(Key + '.' + basename)
         logger.setLevel(logging.INFO)
@@ -58,11 +55,11 @@ def main():
 
         logger.info('Starting POW Processing')
 
-# set up loggy
+        # set up loggy
         loggyOBJ = Loggy(basename)
 
 
-# *************** File Naming ***************
+        # File Naming 
         if '+' in jobFile:
             bandSplit = jobFile.split('+')
             inputFile = bandSplit[0]
@@ -141,6 +138,7 @@ def main():
                         processOBJ.updateParameter('to', outfile)
 
                         if RHash.getGRtype() == 'smart' or RHash.getGRtype() == 'fill':
+                            subloggyOBJ = SubLoggy('cam2map')
                             camrangeOUT = workarea + basename + '_camrange.txt'
                             isis.camrange(from_=infile,
                                           to=camrangeOUT)
@@ -152,7 +150,7 @@ def main():
                                cam['UniversalGroundRange']['MaximumLongitude'] < float(RHash.getMinLon()) or \
                                cam['UniversalGroundRange']['MinimumLongitude'] > float(RHash.getMaxLon()):
 
-                                statis = 'error'
+                                status = 'error'
                                 eSTR = "Error Ground Range Outside Extent Range"
                                 RHerror.addError(os.path.splitext(
                                     os.path.basename(jobFile))[0], eSTR)

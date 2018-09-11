@@ -506,6 +506,7 @@ def main():
                                                  edr_source=EDRsource,
                                                  instrumentid=instrument_Qobj.instrumentid,
                                                  targetid=target_Qobj.targetid)
+                    session.merge(error2_input)
                     session.commit()
 
                     try:

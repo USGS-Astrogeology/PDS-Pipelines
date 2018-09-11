@@ -60,7 +60,7 @@ def main():
     RQ_upc = RedisQueue('UPC_ReadyQueue')
     RQ_thumb = RedisQueue('Thumbnail_ReadyQueue')
     RQ_browse = RedisQueue('Browse_ReadyQueue')
-    RQ_pilotB = RedisQueue('PilotB_ReadyQueue')
+    #RQ_pilotB = RedisQueue('PilotB_ReadyQueue')
 
     try:
         session, _ = db_connect(pds_db)
@@ -129,7 +129,7 @@ def main():
                     RQ_upc.QueueAdd((inputfile, testIN.fileid, archive))
                     RQ_thumb.QueueAdd((inputfile, testIN.fileid, archive))
                     RQ_browse.QueueAdd((inputfile, testIN.fileid, archive))
-                    RQ_pilotB.QueueAdd((inputfile, testIN.fileid, archive))
+                    #RQ_pilotB.QueueAdd((inputfile, testIN.fileid, archive))
 
 
                 RQ_work.QueueRemove(inputfile)
