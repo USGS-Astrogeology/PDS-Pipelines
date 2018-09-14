@@ -48,7 +48,6 @@ def main():
     index = 0
 
     while int(RQ.QueueSize()) > 0:
-        inputfile = RQ.QueueGet().decode('utf-8')
         item = literal_eval(RQ.QueueGet().decode("utf-8"))
         inputfile = item[0]
         archive = item[1]
