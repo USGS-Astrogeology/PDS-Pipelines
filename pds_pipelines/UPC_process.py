@@ -248,7 +248,6 @@ def main():
                         f.write(filedata)
 
                     keywordsOBJ = UPCkeywords(caminfoOUT)
-                print(keywordsOBJ)
                 target_Qobj = session.query(upc_models.Targets).filter(
                     upc_models.Targets.targetname == keywordsOBJ.getKeyword('TargetName').upper()).first()
 
@@ -420,7 +419,8 @@ def main():
             elif status.lower() == 'error':
                 try:
                     label = pvl.load(infile)
-                except:
+                except Exception as e:
+                    logger.info('%s', e)
                     continue
                 date = datetime.datetime.now(pytz.utc).strftime(
                     "%Y-%m-%d %H:%M:%S")
@@ -482,7 +482,11 @@ def main():
 
                     session.commit()
                 else:
-                    label = pvl.load(infile)
+                    try:
+                        label = pvl.load(infile)
+                    except Exception as e:
+                        logger.info('%s', e)
+                        continue
 
                     isisSerial = getISISid(infile)
 
