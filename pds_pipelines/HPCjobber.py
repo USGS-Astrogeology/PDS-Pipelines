@@ -27,7 +27,7 @@ class Args:
 
     def parse_args(self):
         choices = jobconfig.keys()
-        print (choices)
+
         parser = argparse.ArgumentParser(description='PDS HPC Job Submission')
         parser.add_argument('--process', '-p', dest="process", required=True,
                             choices = choices, help="Enter process - {}".format([x for x in choices]))
