@@ -30,7 +30,7 @@ class Args:
 
         parser = argparse.ArgumentParser(description='PDS HPC Job Submission')
         parser.add_argument('--process', '-p', dest="process", required=True,
-                            choices = choices, help="Enter process - {}".format([x for x in choices]))
+                            choices = choices, help="Enter process - {}".format(choices))
 
         parser.add_argument('--jobarray', '-j', dest="jobarray",
                             help="Enter string to set job array size")
