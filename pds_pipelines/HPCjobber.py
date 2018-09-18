@@ -26,7 +26,7 @@ class Args:
         pass
 
     def parse_args(self):
-        choices = jobconfig.keys()
+        choices = list(jobconfig.keys())
 
         parser = argparse.ArgumentParser(description='PDS HPC Job Submission')
         parser.add_argument('--process', '-p', dest="process", required=True,
