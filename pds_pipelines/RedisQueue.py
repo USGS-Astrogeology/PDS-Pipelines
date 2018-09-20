@@ -64,7 +64,7 @@ class RedisQueue(object):
         str
             item
         """
-        item = self.__db.rpop(self.id_name)
+        item = self.__db.lpop(self.id_name)
         return item
 
     def ListGet(self):
@@ -106,5 +106,6 @@ class RedisQueue(object):
         str
             item
         """
-        item = self.__db.rpoplpush(popQ, pushQ)
+        item = self.__db.lpop(popQ)
+        self.__db.rpush(popQ, item)
         return item
