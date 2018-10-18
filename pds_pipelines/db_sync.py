@@ -83,8 +83,8 @@ def main():
         get_stats(source_session, upc_ids)
         return
 
-    #targets = ['public_mars', 'public_moon', 'public_other']
-    targets = ['upcdev_mars', 'upcdev_moon', 'upcdev_other']
+    targets = ['public_mars', 'public_moon', 'public_other']
+    #targets = ['upcdev_mars', 'upcdev_moon', 'upcdev_other']
 
     target_sessions = {}
 
@@ -366,7 +366,7 @@ def get_dest_session(target_id, dest_sessions):
         target_found = session.query(NewStats).filter(NewStats.targetid == target_id).all()
         if target_found:
             return session
-    return dest_sessions['upcdev_other']
+    return dest_sessions['public_other']
 
 
 def sync_upc_id(source_session, dest_sessions, upc_id, meta_types):
