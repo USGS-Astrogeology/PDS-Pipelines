@@ -6,20 +6,31 @@ import datetime
 import pytz
 import logging
 import hashlib
-import shutil
+import argparse
 
-from pds_pipelines.RedisQueue import *
-from pds_pipelines.PDS_DBquery import *
+from pds_pipelines.RedisQueue import RedisQueue
 
-import sqlalchemy
 from sqlalchemy import *
 from sqlalchemy.orm.util import *
 
-import pdb
 from pds_pipelines.db import db_connect
-from pds_pipelines.config import pds_db
+from pds_pipelines.config import pds_db, pds_log
 from pds_pipelines.models.pds_models import Files
 
+
+class Args:
+    def __init__(self):
+        pass
+
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description="DI Process")
+
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choice=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+        args = parser.parse_args()
+        self.log_level = args.log_level
 
 def main():
     #    pdb.set_trace()
@@ -30,10 +41,13 @@ def main():
                  101: '/pds_san/PDS_Archive/Apollo/Rock_Sample_Images/'
                  }
 
-# ********* Set up logging *************
+    args = Args()
+    args.parse_args()
+
     logger = logging.getLogger('DI_Process')
-    logger.setLevel(logging.INFO)
-    logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/DI.log')
+    level = argparse.getLevelName(args.log_level)
+    logger.setLevel(level)
+    logFileHandle = logging.FileHandler(pds_log + 'DI.log')
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)
@@ -53,25 +67,11 @@ def main():
     count = 0
 
     while int(RQ.QueueSize()) > 0:
-
         inputfile = RQ.QueueGet()
-
         Qelement = session.query(Files).filter(
             Files.filename == inputfile).one()
         cpfile = archiveID[Qelement.archiveid] + Qelement.filename
         if os.path.isfile(cpfile):
-
-            """
-            CScmd = 'md5sum ' + cpfile
-            process = subprocess.Popen(
-                CScmd, stdout=subprocess.PIPE, shell=True)
-            (stdout, stderr) = process.communicate()
-            temp_checksum = stdout.split()[0]
-
-#             temp_checksum = hashlib.md5(open(tempfile, 'rb').read()).hexdigest()
-#             os.remove(tempfile)
-            """
-
             # Calculate checksum in chunks of 4096
             f_hash = hashlib.md5()
             with open(cpfile, "rb") as f:
@@ -101,7 +101,7 @@ def main():
         session.commit()
     except:
         session.rollback()
-        logger.error('Error durint commit')
+        logger.error('Error during commit')
     logger.info("End Commit DI process to Database: Success")
     logger.info('Checksum for %s Files Updated', str(index))
 

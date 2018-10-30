@@ -9,7 +9,7 @@ import argparse
 from pds_pipelines.RedisQueue import RedisQueue
 from pds_pipelines.config import pds_info, pds_log
 
-class Args:
+class Args(object):
     """
     Attributes
     ----------
@@ -30,9 +30,10 @@ class Args:
         parser.add_argument('--volume', '-v', dest="volume",
                             help="Enter volume to Ingest")
 
-        parser.add_argument('--verbose', help="Enable verbose logging",
-                            action="store_const", dest="loglevel",
-                            const=logging.INFO, default=logging.WARNING)
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choice=['DEBUG', 'INFO', 'WARNING',
+                                    'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
 
         parser.add_argument('--search', '-s', dest="search",
                             help="Enter string to search for")
@@ -43,32 +44,29 @@ class Args:
 
         self.archive = args.archive
         self.volume = args.volume
-        self.loglevel= args.loglevel
+        self.log_level = args.log_level
         self.search = args.search
         self.ingest = args.ingest
 
 def main():
 
-    # pdb.set_trace()
-
     args = Args()
     args.parse_args()
-    logging.basicConfig(level=args.loglevel)
+
     RQ_ingest = RedisQueue('Ingest_ReadyQueue')
     RQ_linking = RedisQueue('LinkQueue')
 
     # Set up logging
-    
     logger = logging.getLogger(args.archive + '_INGEST')
-    logger.setLevel(logging.INFO)
+    level = logging.getLevelName(args.log_level)
+    logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'Ingest.log')
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)
     logger.addHandler(logFileHandle)
 
-    if args.loglevel == logging.INFO:
-        print("Log File: {}Ingest.log".format(pds_log))
+    print("Log File: {}Ingest.log".format(pds_log))
 
     PDSinfoDICT = json.load(open(pds_info, 'r'))
     try:
@@ -78,20 +76,20 @@ def main():
         print("The following archives are available:")
         for k in PDSinfoDICT.keys():
             print("\t{}".format(k))
-        logging.error("Unable to locate {}".format(args.archive))
+        logging.error("Unable to locate %s", args.archive)
         exit()
 
     if args.volume:
         archivepath = archivepath + '/' + args.volume
 
     logger.info('Starting Ingest for: %s', archivepath)
-    logger.info('Ingest Queue: {}'.format(str(RQ_ingest.id_name)))
-    logger.info('Linking Queue: {}'.format(str(RQ_linking.id_name)))
+    logger.info('Ingest Queue: %s', str(RQ_ingest.id_name))
+    logger.info('Linking Queue: %s', str(RQ_linking.id_name))
 
     # Possible bug in RQ?  Can't add to queue in "if fname == voldesc"
     queue_size = RQ_ingest.QueueSize()
     voldescs = []
-    for dirpath, dirs, files in os.walk(archivepath):
+    for dirpath, _, files in os.walk(archivepath):
         for filename in files:
             fname = os.path.join(dirpath, filename)
             if args.search:
@@ -101,8 +99,8 @@ def main():
                             voldescs.append(fname)
                         if args.ingest:
                             RQ_ingest.QueueAdd((fname, args.archive))
-                    except:
-                        logger.error('File %s NOT added to Ingest Queue', fname)
+                    except Exception as e:
+                        logger.warn('File %s NOT added to Ingest Queue: %s', fname, str(e))
                 else:
                     continue
             else:
@@ -111,8 +109,8 @@ def main():
                         voldescs.append(fname)
                     if args.ingest:
                         RQ_ingest.QueueAdd((fname, args.archive))
-                except:
-                    logger.error('File %s NOT added to Ingest Queue', fname)
+                except Exception as e:
+                    logger.warn('File %s NOT added to Ingest Queue: %s', fname, str(e))
 
     n_added = RQ_ingest.QueueSize() - queue_size
     for fpath in voldescs:
