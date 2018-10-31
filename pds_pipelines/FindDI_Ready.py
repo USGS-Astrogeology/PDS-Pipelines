@@ -1,30 +1,22 @@
 #!/usr/bin/env python
 
-import os
 import sys
-import subprocess
 import datetime
-import pytz
 import argparse
 import json
-
-import sqlalchemy
+import logging
+import pytz
 
 from sqlalchemy import Date, cast
 
-from sqlalchemy import *
-from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm.util import *
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import or_
 
 from pds_pipelines.db import db_connect
-from pds_pipelines.models.pds_models import Files, Archives 
-from pds_pipelines.config import pds_info, pds_db
+from pds_pipelines.models.pds_models import Files
+from pds_pipelines.config import pds_info, pds_db, pds_log
 
-import pdb
-
-
-class Args:
+class Args(object):
     """
     Attributes
     ----------
@@ -43,15 +35,22 @@ class Args:
         parser.add_argument('--volume', '-v', dest="volume",
                             help="Enter Volume to Test")
 
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choice=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
+
         args = parser.parse_args()
         self.archive = args.archive
         self.volume = args.volume
+        self.log_level = args.log_level
 
 
 def archive_expired(session, archiveID, testing_date=None):
     """
     Checks to see if archive is expired
-    
+
     Parameters
     ----------
     session
@@ -62,7 +61,7 @@ def archive_expired(session, archiveID, testing_date=None):
     -------
     expired
     """
-    if testing_date == None:
+    if testing_date is None:
         td = (datetime.datetime.now(pytz.utc)
               - datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -71,7 +70,7 @@ def archive_expired(session, archiveID, testing_date=None):
     expired = session.query(Files).filter(
         Files.archiveid == archiveID).filter(or_(
             cast(Files.di_date, Date) < testing_date,
-            cast(Files.di_date, Date) == None))
+            cast(Files.di_date, Date) is None))
 
     return expired
 
@@ -79,7 +78,7 @@ def archive_expired(session, archiveID, testing_date=None):
 def volume_expired(session, archiveID, volume, testing_date=None):
     """
     Checks to see if the volume is expired
-    
+
     Parameters
     ----------
     session
@@ -90,7 +89,7 @@ def volume_expired(session, archiveID, volume, testing_date=None):
     -------
     expired
     """
-    if testing_date == None:
+    if testing_date is None:
         td = (datetime.datetime.now(pytz.utc)
               - datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -101,7 +100,7 @@ def volume_expired(session, archiveID, volume, testing_date=None):
                                           Files.filename.like(volstr)).filter(or_(
                                               cast(Files.di_date,
                                                    Date) < testing_date,
-                                              cast(Files.di_date, Date) == None))
+                                              cast(Files.di_date, Date) is None))
 
     return expired
 
@@ -121,13 +120,22 @@ def main():
             print("\t{}".format(k))
         exit()
 
+    logger = logging.getLogger('DI_Ready.' + args.archive)
+    level = logging.getLevelName(args.log_level)
+    logger.setLevel(level)
+    logFileHandle = logging.FileHandler(pds_log + 'DI.log')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
+    logFileHandle.setFormatter(formatter)
+    logger.addHandler(logFileHandle)
+
     try:
         # Throws away 'engine' information
         session, _ = db_connect(pds_db)
-        print(args.archive)
-        print('Database Connection Success')
+        logger.info("%s", args.archive)
+        logger.info("Database Connection Success")
     except Exception as e:
-        print(e)
+        logger.error("%s", e)
     else:
         # if db connection fails, there's no sense in doing this part
         td = (datetime.datetime.now(pytz.utc)
@@ -137,17 +145,17 @@ def main():
         if args.volume:
             expired = volume_expired(session, archiveID, args.volume, testing_date)
             if expired.count():
-                print('Volume {} DI Ready: {} Files'.format(
-                    args.volume, str(expired.count())))
+                logger.info("Volume %s DI Ready: %s Files", args.volume,
+                            str(expired.count()))
             else:
-                print('Volume {} DI Current'.format(args.volume))
+                logger.info('Volume %s DI Current', args.volume)
         else:
             expired = archive_expired(session, archiveID, testing_date)
             if expired.count():
-                print('Archive {} DI Ready: {} Files'.format(
-                    args.archive, str(expired.count())))
+                logger.info('Archive %s DI Ready: %s Files', args.archive,
+                            str(expired.count()))
             else:
-                print('Archive {} DI Current'.format(args.archive))
+                logger.info('Archive %s DI Current', args.archive)
 
 
 if __name__ == "__main__":

@@ -5,23 +5,18 @@ import sys
 import subprocess
 import logging
 import shutil
-import zipfile
 import datetime
 import json
+import argparse
+import xml.etree.ElementTree as ET
 
 from io import BytesIO
 from collections import OrderedDict
-from pds_pipelines.RedisQueue import *
-from pds_pipelines.RedisHash import *
-from pds_pipelines.PDS_DBquery import *
+from pds_pipelines.RedisQueue import RedisQueue
+from pds_pipelines.RedisHash import RedisHash
+from pds_pipelines.PDS_DBquery import PDS_DBquery
 from pds_pipelines.config import pds_log, pow_map2_base, scratch
 
-#from xml.etree.ElementTree import Element, SubElement, Comment, tostring
-
-import xml.etree.ElementTree as ET
-import lxml.etree as etree
-
-import pdb
 
 
 def renderError(errorhash):
@@ -31,20 +26,35 @@ def renderError(errorhash):
     errorhash
     """
     for key in errorhash.getKeys():
-        print key
-        print val
+        print(key)
+
+
+class Args(object):
+    def __init__(self):
+        pass
+
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description="DI Process")
+
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choice=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
+        args = parser.parse_args()
+        self.log_level = args.log_level
 
 
 def main():
 
-    #    pdb.set_trace()
+    args = Args()
+    args.parse_args()
     FKey = sys.argv[-1]
-#    FKey = "0f9ce6e5d6c9f241a3e4c2704d9e2c83"
 
 #***************** Setup Logging **************
     logger = logging.getLogger('ServiceFinal.' + FKey)
-    logger.setLevel(logging.INFO)
-    #logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/Service.log')
+    level = logging.getLevelName(args.log_level)
+    logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log+'Service.log')
 
     formatter = logging.Formatter(
@@ -127,7 +137,7 @@ def main():
     logOBJ.write("     PROCESSING DATE: " +
                  datetime.datetime.now().strftime("%Y-%m-%d %H:%M") + "\n")
 
-    isisV = subprocess.check_output(['ls', '-la',  '/usgs/pkgs/isis3'])
+    isisV = subprocess.check_output(['ls', '-la', '/usgs/pkgs/isis3'])
     isisA = isisV.split('>')
     logOBJ.write("     ISIS VERSION:   " + isisA[-1])
     if infoHash.getStatus() == 'ERROR':
@@ -144,7 +154,7 @@ def main():
         procDICT = json.loads(element, object_pairs_hook=OrderedDict)
         for infile in procDICT:
             logOBJ.write("     IMAGE: " + infile + "\n")
-            for proc, testD in procDICT[infile].items():
+            for proc, _ in procDICT[infile].items():
                 logOBJ.write("          PROCESS:  " + str(proc) + "\n")
                 for k, val in procDICT[infile][proc].items():
                     if k == 'status':

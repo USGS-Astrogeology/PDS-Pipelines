@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
 import datetime
-import pytz
 import json
 import logging
 import argparse
-from pds_pipelines.FindDI_Ready import archive_expired, volume_expired
+import pytz
+from pds_pipelines.FindDI_Ready import archive_expired
 from pds_pipelines.RedisQueue import RedisQueue
 from pds_pipelines.db import db_connect
-from pds_pipelines.models.pds_models import Files
-from pds_pipelines.config import pds_info, pds_db
+from pds_pipelines.config import pds_info, pds_db, pds_log
 
 
-class Args:
+class Args(object):
     def __init__(self):
         pass
 
@@ -44,10 +43,12 @@ def main():
     PDS_info = json.load(open(pds_info, 'r'))
     reddis_queue = RedisQueue('DI_ReadyQueue')
 
+    logger.info("DI Queue: %s", reddis_queue.id_name)
+
     try:
         session, _ = db_connect(pds_db)
     except Exception as e:
-        logger.error(e)
+        logger.error("%s", e)
         return 1
 
     for target in PDS_info:
@@ -60,10 +61,9 @@ def main():
         if expired.count():
             for f in expired:
                 reddis_queue.QueueAdd((f.filename, target))
-            logger.info('Archive {} DI Ready: {} Files'.format(
-                target, str(expired.count())))
+            logger.info('Archive %s DI Ready: %s Files', target, str(expired.count()))
         else:
-            logger.info('Archive {} DI Current'.format(target))
+            logger.info('Archive %s DI Current', target)
     return 0
 
 
