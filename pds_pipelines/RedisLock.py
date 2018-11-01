@@ -5,6 +5,9 @@ from pds_pipelines.config import redis_info as ri
 
 class RedisLock(object):
     """A single-point of access 'lock' for Redis Queues
+
+    
+
     """
 
     def __init__(self, name):
@@ -112,10 +115,7 @@ class RedisLock(object):
         str
             The value associated with the specified key.
         """
-        if self.contains(key):
-            return (self._db.hget(self.name, key)).decode('utf-8')
-        else:
-            return None
+        return (self._db.hget(self.name, key)).decode('utf-8')
 
 
     def get_all(self):
