@@ -21,6 +21,13 @@ class Args:
         self.status = args.status
 
 
+def print_status(lock):
+    print("")
+    for k, v in lock.get_all().items():
+        print("{}:\t{}".format(k.decode('utf-8'), status_map[v.decode('utf-8')]))
+    print("")
+
+
 # Map code to human-readable status
 status_map = {'0': 'locked', '1': 'unlocked', '2': 'stopped'}
 
@@ -31,19 +38,17 @@ def main():
     args.parse_args()
 
     if args.status:
-        print()
-        for k, v in redis_lock.get_all().items():
-            print("{}:\t{}".format(k.decode('utf-8'), status_map[v.decode('utf-8')]))
-        print()
+        print_status(redis_lock)
         return
 
     # Inclusion of 'status' operator forces positional arguments to be optional even though they
     #  are conceptually required.  Make sure that they are specified.
     if args.action is None or args.target is None:
+        print("Usage:\t ./lock_queue.py <action> <target>")
         return
 
     action = args.action
-    target = args.target.lower()
+    target = args.target
 
     if target == 'all':
         action += '_all'
@@ -51,12 +56,22 @@ def main():
     else:
         target = {'key':target}
 
+    if target is not None:
+        t = target['key']
+        if redis_lock.get(t) is None:
+            print("Unable to locate '{}'\nAvailble queues:".format(t))
+            for key in redis_lock.get_all():
+                print("\t{}".format(key))
+            return
+            
+
     func = getattr(redis_lock, action)
 
     # if kwargs exist pass kwargs else pass empty param set
     #  Allows for parameterization of foo(required_param) and bar().
     func(**(target or {}))
-    
+
+    print_status(redis_lock)
 
 if __name__ == "__main__":
     main()
