@@ -181,6 +181,5 @@ class MakeMap(object):
         self.mapDICT['End_Group'] = 'Mapping'
         tempPVL = pvl.dumps(self.mapDICT)
 
-        file = open(filename, 'w')
-        file.write(tempPVL)
-        file.close()
+        with open(filename 'wb') as f:
+            f.write(tempPVL)

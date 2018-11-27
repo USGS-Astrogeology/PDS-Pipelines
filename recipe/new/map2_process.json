@@ -1,15 +1,20 @@
 {
-    "inst": "map2_process",
-    "upc": {
-        "recipe": {}
-    },
-    "pow": {
-        "recipe": {}
-    },
-    "reduced": {
-        "recipe": {}
-    },
-    "projected": {
-        "recipe": {}
+    "inst": "MAP",
+    "map": {
+	"recipe": {
+	    "cubeatt-band": {
+		"from_": "value",
+		"to": "value"
+	    }, 
+	    "map2map": {
+		"from_": "value",
+		"to": "value",
+		"map": "value",
+		"matchmap": "no",
+		"pixres": "value",
+		"defaultrange": "value",
+		"interp": "bilinear"
+	    }
+	}    
     }
 }

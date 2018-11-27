@@ -7,9 +7,6 @@ import json
 import redis
 from collections import OrderedDict
 
-from pds_pipelines.Recipe import *
-
-
 class Process(object):
     """
     Attributes
