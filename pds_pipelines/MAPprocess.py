@@ -5,53 +5,61 @@ import sys
 import subprocess
 import logging
 import shutil
+import argparse
 
 from pysis import isis
 from pysis.exceptions import ProcessError
-from pysis.isis import map2map
 
-from pds_pipelines.config import lock_obj
+from pds_pipelines.config import lock_obj, scratch, pds_log
 from pds_pipelines.RedisQueue import RedisQueue
 from pds_pipelines.RedisLock import RedisLock
-from pds_pipelines.RedisHash import *
-from pds_pipelines.Recipe import *
-from pds_pipelines.Loggy import *
-from pds_pipelines.SubLoggy import *
+from pds_pipelines.RedisHash import RedisHash
+from pds_pipelines.Loggy import Loggy
+from pds_pipelines.SubLoggy import SubLoggy
+from pds_pipelines.Process import Process
 
 
-import pdb
+class Args(object):
+    def __init__(self):
+        pass
+
+    def parse_args(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('key')
+        args = parser.parse_args()
+        self.key = args.key
 
 
 def main():
+    args = Args()
+    args.parse_args()
+    key = args.key
 
-    #    pdb.set_trace()
+    workarea = scratch + args.key + '/'
 
-    Key = sys.argv[-1]
-
-    workarea = '/scratch/pds_services/' + Key + '/'
-
-    RQ_file = RedisQueue(Key + '_FileQueue')
-    RQ_work = RedisQueue(Key + '_WorkQueue')
-    RQ_zip = RedisQueue(Key + '_ZIP')
-    RQ_loggy = RedisQueue(Key + '_loggy')
+    RQ_file = RedisQueue(key + '_FileQueue')
+    RQ_work = RedisQueue(key + '_WorkQueue')
+    RQ_zip = RedisQueue(key + '_ZIP')
+    RQ_loggy = RedisQueue(key + '_loggy')
     RQ_final = RedisQueue('FinalQueue')
-    RHash = RedisHash(Key + '_info')
-    RHerror = RedisHash(Key + '_error')
+    RHash = RedisHash(key + '_info')
+    RHerror = RedisHash(key + '_error')
     RQ_lock = RedisLock(lock_obj)
     RQ_lock.add({'MAP':'1'})
 
     if int(RQ_file.QueueSize()) == 0 and RQ_lock.available('MAP'):
-        print "No Files Found in Redis Queue"
+        print("No Files Found in Redis Queue")
     else:
         jobFile = RQ_file.Qfile2Qwork(
-            RQ_file.getQueueName(), RQ_work.getQueueName())
+            RQ_file.getQueueName(), RQ_work.getQueueName()).decode('utf-8')
 
-#******************** Setup system logging **********************
+        # Setup system logging
         basename = os.path.splitext(os.path.basename(jobFile))[0]
-        logger = logging.getLogger(Key + '.' + basename)
+        logger = logging.getLogger(key + '.' + basename)
         logger.setLevel(logging.INFO)
 
-        logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/Service.log')
+        logFileHandle = logging.FileHandler(pds_log + '/Service.log')
+
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
         logFileHandle.setFormatter(formatter)
@@ -61,15 +69,15 @@ def main():
 
         loggyOBJ = Loggy(basename)
 
-# *************** File Naming ***************
+        # File Naming
         infile = workarea + \
             os.path.splitext(os.path.basename(jobFile))[0] + '.input.cub'
         outfile = workarea + \
             os.path.splitext(os.path.basename(jobFile))[0] + '.output.cub'
 
-# *********** Recipe Stuff ********************
+        # Recipe Stuff
 
-        RQ_recipe = RedisQueue(Key + '_recipe')
+        RQ_recipe = RedisQueue(key + '_recipe')
 
         status = 'success'
 
@@ -80,13 +88,9 @@ def main():
             elif status == 'success':
                 processOBJ = Process()
                 process = processOBJ.JSON2Process(element)
-
                 if 'gdal_translate' not in processOBJ.getProcessName():
-
                     if 'cubeatt-band' in processOBJ.getProcessName():
                         if '+' in jobFile:
-                            #                            bandSplit = jobFile.split('+')
-                         #                           infileB = infile + '+' + bandSplit[1]
                             processOBJ.updateParameter('from_', jobFile)
                             processOBJ.updateParameter('to', outfile)
                             processOBJ.ChangeProcess('cubeatt')
@@ -101,17 +105,17 @@ def main():
                         processOBJ.updateParameter('to', outfile)
 
                     elif 'cubeatt-bit' in processOBJ.getProcessName():
-                        if RHash.OutBit() == 'unsignedbyte':
+                        if RHash.OutBit().decode('utf-8') == 'unsignedbyte':
                             temp_outfile = outfile + '+lsb+tile+attached+unsignedbyte+1:254'
-                        elif RHash.OutBit() == 'signedword':
+                        elif RHash.OutBit().decode('utf-8') == 'signedword':
                             temp_outfile = outfile + '+lsb+tile+attached+signedword+-32765:32765'
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', temp_outfile)
                         processOBJ.ChangeProcess('cubeatt')
 
                     elif 'isis2pds' in processOBJ.getProcessName():
-                        #                        finalfile = infile.replace('.input.cub', '_final.img')
-                        finalfile = workarea + RHash.getMAPname() + '.img'
+                        # finalfile = infile.replace('.input.cub', '_final.img')
+                        finalfile = workarea + RHash.getMAPname().decode('utf-8') + '.img'
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', finalfile)
 
@@ -119,7 +123,7 @@ def main():
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', outfile)
 
-                    print processOBJ.getProcess()
+                    print(processOBJ.getProcess())
 
                     for k, v in processOBJ.getProcess().items():
                         func = getattr(isis, k)
@@ -159,25 +163,25 @@ def main():
                         for key, value in v.items():
                             GDALcmd += ' ' + key + ' ' + value
 
-                    if RHash.Format() == 'GeoTiff-BigTiff':
+                    img_format = RHash.Format().decode('utf-8')
+
+                    if img_format == 'GeoTiff-BigTiff':
                         fileext = 'tif'
-                    elif RHash.Format() == 'GeoJPEG-2000':
+                    elif img_format == 'GeoJPEG-2000':
                         fileext = 'jp2'
-                    elif RHash.Format() == 'JPEG':
+                    elif img_format == 'JPEG':
                         fileext = 'jpg'
-                    elif RHash.Format() == 'PNG':
+                    elif img_format == 'PNG':
                         fileext = 'png'
-                    elif RHash.Format() == 'GIF':
+                    elif img_format == 'GIF':
                         fileext = 'gif'
 
-                    logGDALcmd = GDALcmd + ' ' + basename + '.input.cub ' + RHash.getMAPname() + \
-                        '.' + fileext
-                    finalfile = workarea + RHash.getMAPname() + '.' + fileext
-#                    finalfile = infile.replace('.input.cub', '_final.' + fileext)
+                    logGDALcmd = GDALcmd + ' ' + basename + '.input.cub ' + RHash.getMAPname().decode('utf-8') + '.' + fileext
+                    finalfile = workarea + RHash.getMAPname().decode('utf-8') + '.' + fileext
                     GDALcmd += ' ' + infile + ' ' + finalfile
-                    print GDALcmd
+                    print(GDALcmd)
                     try:
-                        result = subprocess.call(GDALcmd, shell=True)
+                        subprocess.call(GDALcmd, shell=True)
                         logger.info('Process GDAL translate :: Success')
                         status = 'success'
                         subloggyOBJ.setStatus('SUCCESS')
@@ -186,25 +190,24 @@ def main():
                             'www.gdal.org/gdal_translate.html')
                         loggyOBJ.AddProcess(subloggyOBJ.getSLprocess())
                         os.remove(infile)
-                    except OSError, e:
+                    except OSError as e:
                         logger.error('Process GDAL translate :: Error')
-                        logger.error(e.stderr)
+                        logger.error(e)
                         status = 'error'
-                        RHerror.addError(os.path.splitext(os.path.basename(jobFile))[
-                                         0], 'Process GDAL translate :: Error')
+                        RHerror.addError(os.path.splitext(os.path.basename(jobFile))[0],
+                                         'Process GDAL translate :: Error')
                         subloggyOBJ.setStatus('ERROR')
                         subloggyOBJ.setCommand(logGDALcmd)
                         subloggyOBJ.setHelpLink(
                             'http://www.gdal.org/gdal_translate.html')
-                        subloggyOBJ.errorOut(e.stderr)
+                        subloggyOBJ.errorOut(e)
                         loggyOBJ.AddProcess(subloggyOBJ.getSLprocess())
 
         if status == 'success':
-            if RHash.Format() == 'ISIS3':
-                finalfile = workarea + RHash.getMAPname() + '.cub'
-#                finalfile = infile.replace('.input.cub', '_final.cub')
+            if RHash.Format().decode('utf-8') == 'ISIS3':
+                finalfile = workarea + RHash.getMAPname().decode('utf-8') + '.cub'
                 shutil.move(infile, finalfile)
-            if RHash.getStatus() != 'ERROR':
+            if RHash.getStatus() != b'ERROR':
                 RHash.Status('SUCCESS')
 
             try:
@@ -227,8 +230,8 @@ def main():
 
         if RQ_file.QueueSize() == 0 and RQ_work.QueueSize() == 0:
             try:
-                RQ_final.QueueAdd(Key)
-                logger.info('Key %s Added to Final Queue: Success', Key)
+                RQ_final.QueueAdd(key)
+                logger.info('Key %s Added to Final Queue: Success', key)
                 logger.info('Job Complete')
             except:
                 logger.error('Key NOT Added to Final Queue')
