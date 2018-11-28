@@ -37,6 +37,7 @@ def main():
 
     workarea = scratch + args.key + '/'
 
+
     RQ_file = RedisQueue(key + '_FileQueue')
     RQ_work = RedisQueue(key + '_WorkQueue')
     RQ_zip = RedisQueue(key + '_ZIP')

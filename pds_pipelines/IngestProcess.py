@@ -2,27 +2,21 @@
 import os
 import sys
 import datetime
-import pytz
 import logging
 import json
 import argparse
-
-
 import hashlib
+import pytz
+
 from ast import literal_eval
-
-from sqlalchemy import *
-from sqlalchemy.orm.util import *
-
 from pds_pipelines.RedisQueue import RedisQueue
 from pds_pipelines.RedisLock import RedisLock
-from pds_pipelines.PDS_DBquery import *
 from pds_pipelines.db import db_connect
 from pds_pipelines.config import pds_info, pds_log, pds_db, archive_base, web_base, lock_obj
 from pds_pipelines.models.pds_models import Files
 
 
-class Args:
+class Args(object):
     def __init__(self):
         pass
 
@@ -32,27 +26,33 @@ class Args:
 
         parser.add_argument('--override', dest='override', action='store_true')
         parser.set_defaults(override=False)
-        args = parser.parse_args()
 
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choice=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
+        args = parser.parse_args()
+        self.log_level = args.log_level
         self.override = args.override
 
 
-
 def main():
+
     args = Args()
     args.parse_args()
     override = args.override
-    # ********* Set up logging *************
     logger = logging.getLogger('Ingest_Process')
-    logger.setLevel(logging.INFO)
+    level = logging.getLevelName(args.log_level)
+    logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'Ingest.log')
-
+    print("Log File: {}Ingest.log".format(pds_log))
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)
     logger.addHandler(logFileHandle)
 
-    logger.info("Starting Process")
+    logger.info("Starting Ingest Process")
     PDSinfoDICT = json.load(open(pds_info, 'r'))
 
     RQ_main = RedisQueue('Ingest_ReadyQueue')
@@ -63,13 +63,17 @@ def main():
     RQ_upc = RedisQueue('UPC_ReadyQueue')
     RQ_thumb = RedisQueue('Thumbnail_ReadyQueue')
     RQ_browse = RedisQueue('Browse_ReadyQueue')
-    #RQ_pilotB = RedisQueue('PilotB_ReadyQueue')
+
+    logger.info("UPC Queue: %s", RQ_upc.id_name)
+    logger.info("Thumbnail Queue: %s", RQ_thumb.id_name)
+    logger.info("Browse Queue: %s", RQ_browse.id_name)
 
     try:
         session, engine = db_connect(pds_db)
         logger.info('DataBase Connecton: Success')
     except:
         logger.error('DataBase Connection: Error')
+        return 1
 
     index = 1
 
@@ -79,7 +83,7 @@ def main():
         inputfile = item[0]
         archive = item[1]
         RQ_work.QueueAdd(inputfile)
-        
+
         subfile = inputfile.replace(PDSinfoDICT[archive]['path'], '')
         # Calculate checksum in chunks of 4096
         f_hash = hashlib.md5()
@@ -91,75 +95,74 @@ def main():
         QOBJ = session.query(Files).filter_by(filename=subfile).first()
 
         runflag = False
-        if QOBJ is None:
-            runflag = True
-        elif filechecksum != QOBJ.checksum:
+        if QOBJ is None or filechecksum != QOBJ.checksum:
             runflag = True
 
-        if runflag == True or override == True:
+        if runflag or override:
             date = datetime.datetime.now(
                 pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
             fileURL = inputfile.replace(archive_base, web_base)
 
             # If all upc requirements are in 'inputfile,' flag for upc
-            upcflag =  all(x in inputfile for x in PDSinfoDICT[archive]['upc_reqs'])
+            upcflag = all(x in inputfile for x in PDSinfoDICT[archive]['upc_reqs'])
             filesize = os.path.getsize(inputfile)
 
             try:
                 # If we found an existing file and want to overwrite the data
-                if QOBJ is not None and override == True:
-                    testIN = QOBJ
+                if QOBJ is not None and override:
+                    ingest_entry = QOBJ
                 # If the file was not found, create a new entry
                 else:
-                    testIN = Files()
-                testIN.archiveid = PDSinfoDICT[archive]['archiveid']
-                testIN.filename = subfile
-                testIN.entry_date = date
-                testIN.checksum = filechecksum
-                testIN.upc_required = upcflag
-                testIN.validation_required = True
-                testIN.header_only = False
-                testIN.release_date = date
-                testIN.file_url = fileURL
-                testIN.file_size = filesize
-                testIN.di_pass = True
-                testIN.di_date = date
+                    ingest_entry = Files()
+                    ingest_entry.archiveid = PDSinfoDICT[archive]['archiveid']
+                    ingest_entry.filename = subfile
+                    ingest_entry.entry_date = date
+                    ingest_entry.checksum = filechecksum
+                    ingest_entry.upc_required = upcflag
+                    ingest_entry.validation_required = True
+                    ingest_entry.header_only = False
+                    ingest_entry.release_date = date
+                    ingest_entry.file_url = fileURL
+                    ingest_entry.file_size = filesize
+                    ingest_entry.di_pass = True
+                    ingest_entry.di_date = date
 
-                session.merge(testIN)
+                session.merge(ingest_entry)
                 session.flush()
 
-                if upcflag == True:
-                    RQ_upc.QueueAdd((inputfile, testIN.fileid, archive))
-                    RQ_thumb.QueueAdd((inputfile, testIN.fileid, archive))
-                    RQ_browse.QueueAdd((inputfile, testIN.fileid, archive))
-                    #RQ_pilotB.QueueAdd((inputfile, testIN.fileid, archive))
-
+                if upcflag:
+                    RQ_upc.QueueAdd((inputfile, ingest_entry.fileid, archive))
+                    RQ_thumb.QueueAdd((inputfile, ingest_entry.fileid, archive))
+                    RQ_browse.QueueAdd((inputfile, ingest_entry.fileid, archive))
+                    #RQ_pilotB.QueueAdd((inputfile,ingest_entry.fileid, archive))
 
                 RQ_work.QueueRemove(inputfile)
 
                 index = index + 1
 
             except Exception as e:
-                print(e)
-                logger.error("Error During File Insert %s", subfile)
+                logger.error("Error During File Insert %s : %s", str(subfile), str(e))
 
-        elif runflag == False:
+        elif not runflag and not override:
             RQ_work.QueueRemove(inputfile)
+            logger.warn("Not running ingest: file %s already present"
+                        " in database and no override flag supplied", inputfile)
 
         if index >= 250:
             try:
                 session.commit()
                 logger.info("Commit 250 files to Database: Success")
                 index = 1
-            except:
+            except Exception as e:
                 session.rollback()
-                logger.error("Something Went Wrong During DB Insert")
+                logger.warn("Unable to commit to database: %s", str(e))
     else:
         logger.info("No Files Found in Ingest Queue")
         try:
             session.commit()
             logger.info("Commit to Database: Success")
-        except:
+        except Exception as e:
+            logger.error("Unable to commit to database: %s", str(e))
             session.rollback()
 
 

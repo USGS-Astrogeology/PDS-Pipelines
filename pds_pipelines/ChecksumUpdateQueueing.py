@@ -1,25 +1,16 @@
 #!/usr/bin/env python
 
-import os
 import sys
-import subprocess
-import datetime
-import pytz
 
 import logging
 import argparse
 
-from pds_pipelines.RedisQueue import *
-from pds_pipelines.HPCjob import *
-
-import sqlalchemy
+from pds_pipelines.RedisQueue import RedisQueue
 from sqlalchemy import *
 from sqlalchemy.orm.util import *
 from pds_pipelines.db import db_connect
 from pds_pipelines.models.pds_models import Files
-from pds_pipelines.config import pds_db
-
-import pdb
+from pds_pipelines.config import pds_db, pds_log
 
 
 class Args:
@@ -42,10 +33,16 @@ class Args:
         parser.add_argument('--volume', '-v', dest="volume",
                             help="Enter volume to Ingest")
 
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choice=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
         args = parser.parse_args()
 
         self.archive = args.archive
         self.volume = args.volume
+        self.log_level = args.log_level
 
 
 def main():
@@ -57,12 +54,7 @@ def main():
 
     RQ = RedisQueue('ChecksumUpdate_Queue')
 
-    archiveDICT = {'cassiniISS': '/pds_san/PDS_Archive/Cassini/ISS',
-                   'mroCTX': '/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/CTX',
-                   'mroHIRISE': '/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE',
-                   'LROLRC_EDR': '/pds_san/PDS_Archive/Lunar_Reconnaissance_Orbiter/LROC/EDR/'
-                   }
-
+    # @TODO Remove/replace "archiveID"
     archiveID = {'cassiniISS': 'cassini_iss_edr',
                  'mroCTX': 16,
                  'mroHIRISE_EDR': '124',
@@ -72,8 +64,9 @@ def main():
 
 # ********* Set up logging *************
     logger = logging.getLogger('ChecksumUpdate_Queueing.' + args.archive)
-    logger.setLevel(logging.INFO)
-    logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/DI.log')
+    level = logging.getLevelName(args.log_level)
+    logger.setLevel(level)
+    logFileHandle = logging.FileHandler(pds_log + 'DI.log')
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)

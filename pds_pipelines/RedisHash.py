@@ -14,7 +14,7 @@ class RedisHash(object):
         namespace : str
         """
 
-        self.__db = redis.StrictRedis(
+        self._db = redis.StrictRedis(
             host=ri['host'], port=ri['port'], db=ri['db'])
         self.id_name = '%s:%s' % (namespace, name)
 
@@ -29,7 +29,7 @@ class RedisHash(object):
         str
             test
         """
-        test = self.__db.hexists(self.id_name, element)
+        test = self._db.hexists(self.id_name, element)
         return test
 
     def HashCount(self):
@@ -39,7 +39,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hlen(self.id_name)
+        item = self._db.hlen(self.id_name)
         return item
 
     def AddHash(self, element):
@@ -48,10 +48,10 @@ class RedisHash(object):
         ----------
         element : str
         """
-        self.__db.hmset(self.id_name, element)
+        self._db.hmset(self.id_name, element)
 
     def RemoveAll(self):
-        self.__db.delete(self.id_name)
+        self._db.delete(self.id_name)
 
     def Status(self, element):
         """
@@ -59,7 +59,7 @@ class RedisHash(object):
         ----------
         element : str
         """
-        self.__db.hset(self.id_name, 'status', element)
+        self._db.hset(self.id_name, 'status', element)
 
     def MAPname(self, element):
         """
@@ -67,7 +67,7 @@ class RedisHash(object):
         ----------
         element : str
         """
-        self.__db.hset(self.id_name, 'MAPname', element)
+        self._db.hset(self.id_name, 'MAPname', element)
 
     def getMAPname(self):
         """
@@ -76,7 +76,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'MAPname')
+        item = self._db.hget(self.id_name, 'MAPname')
         return item
 
     def getStatus(self):
@@ -86,7 +86,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'status')
+        item = self._db.hget(self.id_name, 'status')
         return item
 
     def FileCount(self, element):
@@ -95,7 +95,7 @@ class RedisHash(object):
         ----------
         element : str
         """
-        self.__db.hset(self.id_name, 'filecount', element)
+        self._db.hset(self.id_name, 'filecount', element)
 
     def getFileCount(self):
         """
@@ -104,7 +104,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'filecount')
+        item = self._db.hget(self.id_name, 'filecount')
         return item
 
     def Service(self):
@@ -114,7 +114,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'service')
+        item = self._db.hget(self.id_name, 'service')
         return item
 
     def Format(self):
@@ -124,7 +124,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'fileformat')
+        item = self._db.hget(self.id_name, 'fileformat')
         return item
 
     def OutBit(self):
@@ -134,7 +134,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'outbit')
+        item = self._db.hget(self.id_name, 'outbit')
         return item
 
     def getGRtype(self):
@@ -144,7 +144,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'grtype')
+        item = self._db.hget(self.id_name, 'grtype')
         return item
 
     def getMinLat(self):
@@ -154,7 +154,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'minlat')
+        item = self._db.hget(self.id_name, 'minlat')
         return item
 
     def getMaxLat(self):
@@ -164,7 +164,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'maxlat')
+        item = self._db.hget(self.id_name, 'maxlat')
         return item
 
     def getMinLon(self):
@@ -174,7 +174,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'minlon')
+        item = self._db.hget(self.id_name, 'minlon')
         return item
 
     def getMaxLon(self):
@@ -184,7 +184,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, 'maxlon')
+        item = self._db.hget(self.id_name, 'maxlon')
         return item
 
     def addError(self, infile, error):
@@ -199,7 +199,7 @@ class RedisHash(object):
         str
             item
         """
-        self.__db.hset(self.id_name, infile, error)
+        self._db.hset(self.id_name, infile, error)
 
     def getKeys(self):
         """
@@ -208,7 +208,7 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hkeys(self.id_name)
+        item = self._db.hkeys(self.id_name)
         return item
 
     def getError(self, file):
@@ -218,5 +218,5 @@ class RedisHash(object):
         str
             item
         """
-        item = self.__db.hget(self.id_name, file)
+        item = self._db.hget(self.id_name, file)
         return item

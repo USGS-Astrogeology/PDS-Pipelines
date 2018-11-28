@@ -9,7 +9,7 @@ class RedisQueue(object):
     """
     Attributes
     ----------
-    __db
+    _db
     id_name : str
     """
 
@@ -21,15 +21,15 @@ class RedisQueue(object):
         namespace : str
         """
 
-        # self.__db=redis.Redis(host=ri['host'], port=ri['port'], db=ri['db'])
-        self.__db=redis.StrictRedis(host=ri['host'], port=ri['port'], db=ri['db'])
+        # self._db=redis.Redis(host=ri['host'], port=ri['port'], db=ri['db'])
+        self._db=redis.StrictRedis(host=ri['host'], port=ri['port'], db=ri['db'])
         # @TODO change back to non-local queue
-        #self.__db = redis.StrictRedis(host='redis')
-        #self.__db = redis.StrictRedis(host='localhost')
+        #self._db = redis.StrictRedis(host='redis')
+        #self._db = redis.StrictRedis(host='localhost')
         self.id_name = '%s:%s' % (namespace, name)
 
     def RemoveAll(self):
-        self.__db.delete(self.id_name)
+        self._db.delete(self.id_name)
 
     def getQueueName(self):
         """
@@ -45,9 +45,9 @@ class RedisQueue(object):
         Returns
         -------
         str
-            __db.llen(self.id_name)
+            _db.llen(self.id_name)
         """
-        return self.__db.llen(self.id_name)
+        return self._db.llen(self.id_name)
 
     def QueueAdd(self, element):
         """
@@ -55,7 +55,7 @@ class RedisQueue(object):
         ----------
         element : str
         """
-        self.__db.rpush(self.id_name, element)
+        self._db.rpush(self.id_name, element)
 
     def QueueGet(self):
         """
@@ -64,7 +64,7 @@ class RedisQueue(object):
         str
             item
         """
-        item = self.__db.lpop(self.id_name)
+        item = self._db.lpop(self.id_name)
         return item
 
     def ListGet(self):
@@ -73,7 +73,7 @@ class RedisQueue(object):
         -------
         list
         """
-        list = self.__db.lrange(self.id_name, 0, -1)
+        list = self._db.lrange(self.id_name, 0, -1)
         return list
 
     def RecipeGet(self):
@@ -82,7 +82,7 @@ class RedisQueue(object):
         -------
         recipe : str
         """
-        recipe = self.__db.lrange(self.id_name, 0, -1)
+        recipe = self._db.lrange(self.id_name, 0, -1)
         return recipe
 
     def QueueRemove(self, element):
@@ -92,7 +92,7 @@ class RedisQueue(object):
         element : str
         """
         value = int(0)
-        self.__db.lrem(self.id_name, value, element)
+        self._db.lrem(self.id_name, value, element)
 
     def Qfile2Qwork(self, popQ, pushQ):
         """
@@ -106,6 +106,6 @@ class RedisQueue(object):
         str
             item
         """
-        item = self.__db.lpop(popQ)
-        self.__db.rpush(popQ, item)
+        item = self._db.lpop(popQ)
+        self._db.rpush(popQ, item)
         return item

@@ -6,7 +6,7 @@ import json
 import datetime
 import pytz
 import logging
-
+import argparse
 from ast import literal_eval
 
 from pysis import isis
@@ -32,10 +32,7 @@ def getISISid(infile):
 
 def scaleFactor(line, sample, jsonfile):
 
-#    pdb.set_trace()
-
-    infoDICT = json.load(open(jsonfile, 'r'))   
-
+    infoDICT = json.load(open(jsonfile, 'r'))
     maxLine = int(infoDICT['reduced']['browse']['maxlines'])
     maxSample = int(infoDICT['reduced']['browse']['maxsamples'])
     minLine = int(infoDICT['reduced']['browse']['minlines'])
@@ -51,7 +48,7 @@ def scaleFactor(line, sample, jsonfile):
     else:
         scalefactor = sample/maxSample
         testline = int(line/scalefactor)
-         
+
         if testline < minLine:
             scalefactor = line/minLine
 
@@ -65,7 +62,6 @@ def makedir(inputfile):
 
     temppath = os.path.dirname(inputfile).lower()
     finalpath = temppath.replace('/pds_san/pds_archive/', '/pds_san/PDS_Derived/UPC/images/')
-    # finalpath = temppath.replace('/pds_san/pds_archive/', '/home/arsanders/PDS-Pipelines/products/browse/')
 
     if not os.path.exists(finalpath):
         try:
@@ -89,8 +85,8 @@ def DB_addURL(session, isisSerial, inputfile, tid):
 
         print(Qobj.upcid)
         DBinput = MetaString(upcid=Qobj.upcid,
-                            typeid=tid,
-                            value=outputfile)
+                             typeid=tid,
+                             value=outputfile)
 
         try:
             session.merge(DBinput)
@@ -117,16 +113,38 @@ def AddProcessDB(session, fid, outvalue):
         return 'ERROR'
 
 
+class Args(object):
+    def __init__(self):
+        pass
+
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description="DI Process")
+
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choice=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
+        args = parser.parse_args()
+        self.log_level = args.log_level
+
+
+
 def main():
 
 #    pdb.set_trace()
-##***************** Set up logging *****************
+
+    args = Args()
+    args.parse_args()
+
+
     logger = logging.getLogger('Browse_Process')
-    logger.setLevel(logging.INFO)
+    level = logging.getLevelName(args.log_level)
+    logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'Process.log')
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s, %(message)s')
     logFileHandle.setFormatter(formatter)
-    logger.addHandler(logFileHandle)    
+    logger.addHandler(logFileHandle)
 
     RQ_main = RedisQueue('Browse_ReadyQueue')
     RQ_lock = RedisLock(lock_obj)
@@ -156,10 +174,11 @@ def main():
             status = 'success'
             for item in recipeOBJ.getProcesses():
                 if status == 'error':
+                    logger.error("Error processing %s", inputfile)
                     break
                 elif status == 'success':
                     processOBJ = Process()
-                    processR = processOBJ.ProcessFromRecipe(item, recipeOBJ.getRecipe())
+                    processOBJ.ProcessFromRecipe(item, recipeOBJ.getRecipe())
 
                     if '2isis' in item:
                         processOBJ.updateParameter('from_', inputfile)
@@ -175,7 +194,7 @@ def main():
                             query_band_set = set(query_bands)
                         except:
                             query_band_set = set([query_bands])
-                        
+
                         # Iterate through 'bands' and grab the first value that is present in the
                         #  set defined by 'bandbinquery' -- if not present, default to 1
                         exband = next((band for band in bands if band in query_band_set), 1)
@@ -206,7 +225,8 @@ def main():
                         processOBJ.updateParameter('to', outfile)
 
                     elif item == 'isis2std':
-                        final_outfile = finalpath + '/' + os.path.splitext(os.path.basename(inputfile))[0] + '.browse.jpg'
+                        final_outfile = finalpath + '/' + os.path.splitext(
+                            os.path.basename(inputfile))[0] + '.browse.jpg'
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', final_outfile)
 
@@ -229,11 +249,10 @@ def main():
                             print(e)
                             logger.error('Process %s :: Error', k)
                             status = 'error'
-            if status == 'success': 
+            if status == 'success':
                 DB_addURL(upc_session, isisSerial, final_outfile, tid)
                 os.remove(infile)
-                logger.info('Browse Process Success: %s', inputfile)  
-
+                logger.info('Browse Process Success: %s', inputfile)
                 AddProcessDB(pds_session, fid, 't')
         else:
             logger.error('File %s Not Found', inputfile)

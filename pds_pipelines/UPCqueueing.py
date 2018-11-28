@@ -10,7 +10,7 @@ from pds_pipelines.RedisQueue import RedisQueue
 from pds_pipelines.config import pds_log, pds_info, pds_db
 
 
-class Args:
+class Args(object):
     def __init__(self):
         pass
 
@@ -27,22 +27,27 @@ class Args:
         parser.add_argument('--search', '-s', dest="search",
                             help="Enter string to search for")
 
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choice=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
         args = parser.parse_args()
 
         self.archive = args.archive
         self.volume = args.volume
         self.search = args.search
+        self.log_level = args.log_level
 
 
 def main():
 
-    #    pdb.set_trace()
     args = Args()
     args.parse_args()
 
     logger = logging.getLogger('UPC_Queueing.' + args.archive)
-    logger.setLevel(logging.INFO)
-    # logFileHandle = logging.FileHandler('/usgs/cdev/PDS/logs/Process.log')
+    level = logging.getLevelName(args.log_level)
+    logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'Process.log')
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s, %(message)s')
@@ -63,12 +68,14 @@ def main():
 
     RQ = RedisQueue('UPC_ReadyQueue')
 
+    logger.info("UPC queue: %s", RQ.id_name)
+
     try:
         session, _ = db_connect(pds_db)
-        print('Database Connection Success')
+        logger.info('Database Connection Success')
     except Exception as e:
-        print(e)
-        print('Database Connection Error')
+        logger.error('Database Connection Error\n\n%s', e)
+        return 1
 
     if args.volume:
         volstr = '%' + args.volume + '%'
@@ -77,7 +84,7 @@ def main():
                                            Files.upc_required == 't')
     else:
         qOBJ = session.query(Files).filter(Files.archiveid == archiveID,
-                                             Files.upc_required == 't')
+                                           Files.upc_required == 't')
     if qOBJ:
         addcount = 0
         for element in qOBJ:
@@ -88,7 +95,7 @@ def main():
 
         logger.info('Files Added to UPC Queue: %s', addcount)
 
-    print("Done")
+    logger.info("UPC Processing successfully completed")
 
 
 if __name__ == "__main__":

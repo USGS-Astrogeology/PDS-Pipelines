@@ -143,7 +143,7 @@ class MetaBands(Base):
     __table_args__ = (PrimaryKeyConstraint('upcid', 'filter', 'centerwave'),)
     upcid = Column(Integer)
     # @TODO filter is a keyword, we should refactor this here and in db
-    filter = Column(String(255))
+    filter = Column(String(256))
     centerwave = Column(Float)
 
     def __init__(self, **kwargs):
@@ -156,6 +156,24 @@ class MetaGeometry(Meta, Base):
     def __init__(self, **kwargs):
         Base.__init__(self, **kwargs)
 
+
+class NewStats(Base):
+    __tablename__ = 'new_stats'
+    instrumentid = Column(Integer, primary_key=True)
+    targetid = Column(Integer, primary_key=True)
+    targetname = Column(String(256))
+    system = Column(String(20))
+    instrument = Column(String(256))
+    mission = Column(String(256))
+    spacecraft = Column(String(256))
+    displayname = Column(String(256))
+    start_date = Column(Time)
+    stop_date = Column(Time)
+    last_published = Column(Time)
+    bands = Column(Integer)
+    total = Column(Integer)
+    errors = Column(Integer)
+    
 
 
 class_map = {
