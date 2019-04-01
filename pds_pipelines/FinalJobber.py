@@ -43,7 +43,7 @@ def main():
     logger.info("Reddis Queue: %s", RQ_final.id_name)
 
     if int(RQ_final.QueueSize()) == 0:
-        logging.info('Nothing Found in Final Queue')
+        logger.info('Nothing Found in Final Queue')
     else:
         FKey = RQ_final.QueueGet()
         logger.info('Found %s in Final Queue', str(FKey))
