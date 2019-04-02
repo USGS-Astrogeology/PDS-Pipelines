@@ -604,6 +604,7 @@ def main():
             key = DBQO.jobKey()
         # If the queue is empty, it'll throw a type error.
         except TypeError:
+            logger.debug('No keys found in clusterjobs database')
             exit(1)
     try:
         # Set the 'queued' column to current time i.e. prep for processing

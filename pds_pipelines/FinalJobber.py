@@ -40,10 +40,10 @@ def main():
 
 #***************Look at Final queue for work************
     RQ_final = RedisQueue('FinalQueue')
-    logger.info("Reddis Queue: %s", RQ_final.id_name)
+    logger.debug("Reddis Queue: %s", RQ_final.id_name)
 
     if int(RQ_final.QueueSize()) == 0:
-        logger.info('Nothing Found in Final Queue')
+        logger.debug('Nothing Found in Final Queue')
     else:
         FKey = RQ_final.QueueGet()
         logger.info('Found %s in Final Queue', str(FKey))
