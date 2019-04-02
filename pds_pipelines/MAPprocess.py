@@ -116,9 +116,9 @@ def main():
                         processOBJ.updateParameter('to', outfile)
 
                     elif 'cubeatt-bit' in processOBJ.getProcessName():
-                        if RHash.OutBit().decode('utf-8') == 'unsignedbyte':
+                        if RHash.OutBit() == 'unsignedbyte':
                             temp_outfile = outfile + '+lsb+tile+attached+unsignedbyte+1:254'
-                        elif RHash.OutBit().decode('utf-8') == 'signedword':
+                        elif RHash.OutBit() == 'signedword':
                             temp_outfile = outfile + '+lsb+tile+attached+signedword+-32765:32765'
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', temp_outfile)
@@ -126,7 +126,7 @@ def main():
 
                     elif 'isis2pds' in processOBJ.getProcessName():
                         # finalfile = infile.replace('.input.cub', '_final.img')
-                        finalfile = workarea + RHash.getMAPname().decode('utf-8') + '.img'
+                        finalfile = workarea + RHash.getMAPname() + '.img'
                         processOBJ.updateParameter('from_', infile)
                         processOBJ.updateParameter('to', finalfile)
 
@@ -174,7 +174,7 @@ def main():
                         for key, value in v.items():
                             GDALcmd += ' ' + key + ' ' + value
 
-                    img_format = RHash.Format().decode('utf-8')
+                    img_format = RHash.Format()
 
                     if img_format == 'GeoTiff-BigTiff':
                         fileext = 'tif'
@@ -187,8 +187,8 @@ def main():
                     elif img_format == 'GIF':
                         fileext = 'gif'
 
-                    logGDALcmd = GDALcmd + ' ' + basename + '.input.cub ' + RHash.getMAPname().decode('utf-8') + '.' + fileext
-                    finalfile = workarea + RHash.getMAPname().decode('utf-8') + '.' + fileext
+                    logGDALcmd = GDALcmd + ' ' + basename + '.input.cub ' + RHash.getMAPname() + '.' + fileext
+                    finalfile = workarea + RHash.getMAPname() + '.' + fileext
                     GDALcmd += ' ' + infile + ' ' + finalfile
                     print(GDALcmd)
                     try:
@@ -215,10 +215,10 @@ def main():
                         loggyOBJ.AddProcess(subloggyOBJ.getSLprocess())
 
         if status == 'success':
-            if RHash.Format().decode('utf-8') == 'ISIS3':
-                finalfile = workarea + RHash.getMAPname().decode('utf-8') + '.cub'
+            if RHash.Format() == 'ISIS3':
+                finalfile = workarea + RHash.getMAPname() + '.cub'
                 shutil.move(infile, finalfile)
-            if RHash.getStatus() != b'ERROR':
+            if RHash.getStatus() != 'ERROR':
                 RHash.Status('SUCCESS')
 
             try:
