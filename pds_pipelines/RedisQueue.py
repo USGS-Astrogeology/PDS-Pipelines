@@ -106,6 +106,5 @@ class RedisQueue(object):
         str
             item
         """
-        item = self._db.lpop(popQ)
-        self._db.rpush(popQ, item)
+        item = self._db.rpoplpush(popQ, pushQ)
         return item
