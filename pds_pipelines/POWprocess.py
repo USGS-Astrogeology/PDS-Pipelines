@@ -46,9 +46,9 @@ def main():
     namespace = args.namespace
 
     if namespace is None:
-        namespace is default_namespace
-    workarea = scratch + key + '/'
+        namespace = default_namespace
 
+    workarea = scratch + key + '/'
     RQ_file = RedisQueue(key + '_FileQueue', namespace)
     RQ_work = RedisQueue(key + '_WorkQueue', namespace)
     RQ_zip = RedisQueue(key + '_ZIP', namespace)
@@ -261,8 +261,8 @@ def main():
                     for process, v, in processOBJ.getProcess().items():
                         subloggyOBJ = SubLoggy(process)
                         GDALcmd += process
-                        for key, value in v.items():
-                            GDALcmd += ' ' + key + ' ' + value
+                        for dict_key, value in v.items():
+                            GDALcmd += ' ' + dict_key + ' ' + value
 
                     frmt = RHash.Format()
                     if frmt == 'GeoTiff-BigTiff':
