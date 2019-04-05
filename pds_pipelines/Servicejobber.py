@@ -580,6 +580,7 @@ class Args(object):
         args = parser.parse_args()
         self.key = args.key
         self.namespace = args.namespace
+        self.norun = args.norun
 
 def main():
     args = Args()
