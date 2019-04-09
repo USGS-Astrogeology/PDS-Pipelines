@@ -45,7 +45,7 @@ def main():
     if int(RQ_final.QueueSize()) == 0:
         logger.debug('Nothing Found in Final Queue')
     else:
-        FKey = RQ_final.QueueGet()
+        FKey = RQ_final.QueueGet().decode()
         logger.info('Found %s in Final Queue', str(FKey))
 
 # ** *************** HPC job stuff ***********************
