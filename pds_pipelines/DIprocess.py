@@ -64,7 +64,7 @@ def main():
     logger.info("DI Queue: %s", RQ.id_name)
 
     while int(RQ.QueueSize()) > 0 and RQ_lock.available(RQ.id_name):
-        item = literal_eval(RQ.QueueGet().decode("utf-8"))
+        item = literal_eval(RQ.QueueGet())
         inputfile = item[0]
         archive = item[1]
         logger.debug("%s - %s", inputfile, archive) 

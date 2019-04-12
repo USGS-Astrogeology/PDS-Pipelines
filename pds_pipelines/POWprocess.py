@@ -63,8 +63,8 @@ def main():
         print("No Files Found in Redis Queue")
     else:
         print(RQ_file.getQueueName())
-        jobFile = RQ_file.Qfile2Qwork(
-            RQ_file.getQueueName(), RQ_work.getQueueName()).decode('utf-8')
+        jobFile = RQ_file.Qfile2Qwork(RQ_file.getQueueName(),
+                                      RQ_work.getQueueName())
 
         # Setup system logging
         basename = os.path.splitext(os.path.basename(jobFile))[0]

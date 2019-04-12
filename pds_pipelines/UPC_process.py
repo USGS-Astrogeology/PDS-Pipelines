@@ -137,11 +137,10 @@ def main():
     # while there are items in the redis queue
     while int(RQ_main.QueueSize()) > 0 and RQ_lock.available(RQ_main.id_name):
         # get a file from the queue
-        item = literal_eval(RQ_main.QueueGet().decode("utf-8"))
+        item = literal_eval(RQ_main.QueueGet())
         inputfile = item[0]
         fid = item[1]
         archive = item[2]
-        #inputfile = (RQ_main.QueueGet()).decode('utf-8')
         if os.path.isfile(inputfile):
             pass
         else:

@@ -45,7 +45,7 @@ def main():
 
     while int(RQ.QueueSize()) > 0:
         # Grab a tuple of values from the redis queue
-        item = literal_eval(RQ.QueueGet().decode('utf-8'))
+        item = literal_eval(RQ.QueueGet())
         # Split tuple into two values
         inputfile = item[0]
         archive = item[1]
