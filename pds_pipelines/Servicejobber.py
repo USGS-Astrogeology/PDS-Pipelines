@@ -573,9 +573,14 @@ class Args(object):
                             '-n',
                             dest='namespace',
                             help="Queue namespace")
+        parser.add_argument('--norun',
+                            help="Set up queues and write out SBATCH script, but do not submit it to SLURM",
+                            action="store_true")
+
         args = parser.parse_args()
         self.key = args.key
         self.namespace = args.namespace
+        self.norun = args.norun
 
 def main():
     args = Args()
@@ -1012,12 +1017,16 @@ def main():
     except IOError as e:
         logger.error('SBATCH File %s Not Found', SBfile)
 
-    try:
-        jobOBJ.Run()
-        logger.info('Job Submission to HPC: Success')
-        DBQO.setJobsStarted(key)
-    except IOError as e:
-        logger.error('Jobs NOT Submitted to HPC')
+
+    if args.norun:
+        logger.info('No-run mode, will not submit HPC job.')
+    else:
+        try:
+            jobOBJ.Run()
+            logger.info('Job Submission to HPC: Success')
+            DBQO.setJobsStarted(key)
+        except IOError as e:
+            logger.error('Jobs NOT Submitted to HPC')
 
 
 if __name__ == "__main__":
