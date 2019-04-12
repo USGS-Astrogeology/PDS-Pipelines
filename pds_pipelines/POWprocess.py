@@ -54,6 +54,7 @@ def main():
     RQ_zip = RedisQueue(key + '_ZIP', namespace)
     RQ_loggy = RedisQueue(key + '_loggy', namespace)
     RQ_final = RedisQueue('FinalQueue', namespace)
+    RQ_recipe = RedisQueue(key + '_recipe', namespace)
     RHash = RedisHash(key + '_info')
     RHerror = RedisHash(key + '_error')
     RQ_lock = RedisLock(lock_obj)
@@ -95,7 +96,6 @@ def main():
         outfile = workarea + \
             os.path.splitext(os.path.basename(jobFile))[0] + '.output.cub'
 
-        RQ_recipe = RedisQueue(key + '_recipe')
 
         status = 'success'
         for element in RQ_recipe.RecipeGet():
