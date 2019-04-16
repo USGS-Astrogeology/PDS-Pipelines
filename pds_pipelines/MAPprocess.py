@@ -53,6 +53,7 @@ def main():
     RQ_zip = RedisQueue(key + '_ZIP', namespace)
     RQ_loggy = RedisQueue(key + '_loggy', namespace)
     RQ_final = RedisQueue('FinalQueue', namespace)
+    RQ_recipe = RedisQueue(key + '_recipe', namespace)
     RHash = RedisHash(key + '_info')
     RHerror = RedisHash(key + '_error')
     RQ_lock = RedisLock(lock_obj)
@@ -88,7 +89,6 @@ def main():
 
         # Recipe Stuff
 
-        RQ_recipe = RedisQueue(key + '_recipe')
 
         status = 'success'
 
