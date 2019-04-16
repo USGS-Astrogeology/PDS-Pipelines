@@ -1,8 +1,14 @@
 import os, sys
 import argparse
-from smtplib import SMTP
-from io import StringIO
-from email.message import EmailMessage
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def setup_smtp():
+    server = smtplib.SMTP()
+    server.connect()
+    server.ehlo()
+    return server
 
 class Args:
     def __init__(self):
@@ -17,15 +23,31 @@ class Args:
         self.email = args.email
 
 def main():
+    server = smtplib.SMTP()
+    server.connect()
+    server.ehlo()
+    return server
     args = Args()
     args.parse_args()
+    
     exists = os.path.isfile(args.path)
 
     if exists is True:
         return
     else:
-        email.message.EmailMessage('uh oh')
-        SMTP.send_message(msg, from_addr=None , to_addrs=args.path)
-
+        body = ("missing nfs mount")
+        msg = MIMEMultipart()
+        msg['From'] = 'astroweb@usgs.gov'
+        msg['To'] = args.email
+        msg['Subject'] = 'Missing NFS Mount'
+        msg.attach(MIMEText(body, 'plain'))
+        text = msg.as_string()
+        server.sendmail('astroweb@usgs.gov', args.email, text)
+        # Update the database to reflect that the user was notified
+        session.commit()
 if __name__ == '__main__':
     main()
+
+
+
+
