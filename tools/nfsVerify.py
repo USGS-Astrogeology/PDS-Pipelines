@@ -4,11 +4,6 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-def setup_smtp():
-    server = smtplib.SMTP()
-    server.connect()
-    server.ehlo()
-    return server
 
 class Args:
     def __init__(self):
@@ -30,21 +25,21 @@ def main():
     args = Args()
     args.parse_args()
     
-    exists = os.path.isfile(args.path)
+    #exists = os.path.isfile(args.path)
 
-    if exists is True:
-        return
-    else:
-        body = ("missing nfs mount")
-        msg = MIMEMultipart()
-        msg['From'] = 'astroweb@usgs.gov'
-        msg['To'] = args.email
-        msg['Subject'] = 'Missing NFS Mount'
-        msg.attach(MIMEText(body, 'plain'))
-        text = msg.as_string()
-        server.sendmail('astroweb@usgs.gov', args.email, text)
-        # Update the database to reflect that the user was notified
-        session.commit()
+    #if exists is True:
+        #return
+    #else:
+    body = ('stale NFS connection to PDS SAN') #and timestamp and machine
+    msg = MIMEMultipart()
+    msg['From'] = 'emi.bovre@gmail.com'
+    msg['To'] = 'eab356@nau.edu'
+    msg['Subject'] = 'Missing NFS Mount' #machine name
+    msg.attach(MIMEText(body, 'plain'))
+    text = msg.as_string()
+    server.sendmail('emi.bovre@gmail.com', 'eab356@nau.edu', text)
+    # Update the database to reflect that the user was notified
+    session.commit()
 if __name__ == '__main__':
     main()
 
