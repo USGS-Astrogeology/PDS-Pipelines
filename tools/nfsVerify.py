@@ -3,7 +3,8 @@ import argparse
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
+from datetime import datetime
+import socket
 
 class Args:
     def __init__(self):
@@ -11,8 +12,8 @@ class Args:
 
     def parse_args(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--path', '-p', nargs = '?', help='')
-        parser.add_argument('--email','-e',help='')
+        parser.add_argument('--path', '-p', nargs = '?', help='file path')
+        parser.add_argument('--email','-e', nargs='+',help='list of emails')
         args = parser.parse_args()
         self.path = args.path
         self.email = args.email
@@ -21,28 +22,26 @@ def main():
     server = smtplib.SMTP()
     server.connect()
     server.ehlo()
-    return server
     args = Args()
     args.parse_args()
     
-    #exists = os.path.isfile(args.path)
-
-    #if exists is True:
-        #return
-    #else:
-    body = ('stale NFS connection to PDS SAN') #and timestamp and machine
-    msg = MIMEMultipart()
-    msg['From'] = 'emi.bovre@gmail.com'
-    msg['To'] = 'eab356@nau.edu'
-    msg['Subject'] = 'Missing NFS Mount' #machine name
-    msg.attach(MIMEText(body, 'plain'))
-    text = msg.as_string()
-    server.sendmail('emi.bovre@gmail.com', 'eab356@nau.edu', text)
-    # Update the database to reflect that the user was notified
-    session.commit()
+    exists = os.path.isfile(args.path)
+    print(exists)
+    
+    if exists is True:
+        print('NFS Mount was found')
+    else:
+        time = datetime.now().timestamp()
+        readable = datetime.fromtimestamp(time).isoformat()
+        body = ('stale NFS connection to PDS SAN ' + str(readable) + 
+        ' ' + str(socket.gethostname()))
+        msg = MIMEMultipart()
+        msg['From'] = 'astroweb@usgs.gov'
+        msg['To'] = ','.join(args.email)
+        msg['Subject'] = ('Missing NFS Mount ' + str(socket.gethostname()))
+        msg.attach(MIMEText(body, 'plain'))
+        text = msg.as_string()
+        server.sendmail('astroweb@usgs.gov', args.email, text)
+        server.quit
 if __name__ == '__main__':
     main()
-
-
-
-
