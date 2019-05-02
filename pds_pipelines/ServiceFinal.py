@@ -16,6 +16,7 @@ from pds_pipelines.RedisQueue import RedisQueue
 from pds_pipelines.RedisHash import RedisHash
 from pds_pipelines.PDS_DBquery import PDS_DBquery
 from pds_pipelines.config import pds_log, pow_map2_base, scratch
+from pysis import ISIS_VERSION as isis_version
 
 
 
@@ -148,9 +149,7 @@ def main():
     logOBJ.write("     PROCESSING DATE: " +
                  datetime.datetime.now().strftime("%Y-%m-%d %H:%M") + "\n")
 
-    isisV = subprocess.check_output(['ls', '-la', '/usgs/pkgs/isis3']).decode('utf-8')
-    isisA = isisV.split('>')
-    logOBJ.write("     ISIS VERSION:   " + isisA[-1])
+    logOBJ.write("     ISIS VERSION:   " + isis_version)
     if infoHash.getStatus() == 'ERROR':
         logOBJ.write("     JOB STATUS:      " +
                      infoHash.getStatus() + " See Details Below\n")
@@ -218,7 +217,7 @@ def main():
             Zcmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         (stdout, stderr) = process.communicate()
 
-        loggerinfo('Map file %s added to zip file: Success', map_file)
+        logger.info('Map file %s added to zip file: Success', map_file)
         logger.info('zip stdout: ' + stdout)
         logger.info('zip stderr: ' + stderr)
     except:
