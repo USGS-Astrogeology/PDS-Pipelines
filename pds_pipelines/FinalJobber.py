@@ -6,7 +6,7 @@ import logging
 
 from pds_pipelines.RedisQueue import RedisQueue
 from pds_pipelines.HPCjob import HPCjob
-from pds_pipelines.config import pds_log, slurm_log, cmd_dir, scratch
+from pds_pipelines.config import pds_log, slurm_log, cmd_dir, scratch, default_namespace
 
 
 class Args(object):
@@ -36,6 +36,9 @@ def main():
     args = Args()
     args.parse_args()
     namespace = args.namespace
+
+    if namespace is None:
+        namespace = default_namespace
 
     logger = logging.getLogger('FinalJobber')
     level = logging.getLevelName(args.log_level)
