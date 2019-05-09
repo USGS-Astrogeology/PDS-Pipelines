@@ -1,4 +1,4 @@
-import os, sys
+import os
 import argparse
 import smtplib
 from email.mime.text import MIMEText
@@ -24,16 +24,16 @@ def main():
     server.ehlo()
     args = Args()
     args.parse_args()
-    
+
     exists = os.path.isfile(args.path)
     print(exists)
-    
+
     if exists is True:
         print('NFS Mount was found')
     else:
         time = datetime.now().timestamp()
         readable = datetime.fromtimestamp(time).isoformat()
-        body = ('stale NFS connection to PDS SAN ' + str(readable) + 
+        body = ('stale NFS connection to PDS SAN ' + str(readable) +
         ' ' + str(socket.gethostname()))
         msg = MIMEMultipart()
         msg['From'] = 'astroweb@usgs.gov'
