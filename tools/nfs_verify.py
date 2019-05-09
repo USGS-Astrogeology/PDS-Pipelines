@@ -26,9 +26,8 @@ def main():
     args.parse_args()
 
     exists = os.path.isfile(args.path)
-    print(exists)
 
-    if exists is True:
+    if exists:
         print('NFS Mount was found')
     else:
         time = datetime.now().timestamp()
@@ -43,5 +42,7 @@ def main():
         text = msg.as_string()
         server.sendmail('astroweb@usgs.gov', args.email, text)
         server.quit
+
+
 if __name__ == '__main__':
     main()
