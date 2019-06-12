@@ -12,45 +12,88 @@ from pds_pipelines.db import db_connect
 from pds_pipelines.models.pds_models import Files
 from pds_pipelines.config import pds_info, pds_db, pds_log
 from sqlalchemy import Date, cast
+from sqlalchemy.orm.util import *
 from sqlalchemy import or_
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='PDS DI Data Integrity')
+class Args(object):
+    """
+    Objects that have the attributes described below
 
-    parser.add_argument('--archive', '-a', dest="archive", required=True,
-                        help="Enter archive - archive to ingest")
+    Attributes
+    ----------
+    archive : str
+    volume : str
+    jobarray : str
+    """
+    def __init__(self):
+        pass
 
-    parser.add_argument('--volume', '-v', dest="volume",
-                        help="Enter volume to Ingest")
+    def parse_args(self):
+        """
+        Defines how to parse command-line arguments
 
-    parser.add_argument('--jobarray', '-j', dest="jobarray",
-                        help="Enter string to set job array size")
+        Parameters
+        ----------
+        name : str
+              name of argument
 
-    parser.add_argument('--log', '-l', dest="log_level",
-                        choices=['DEBUG', 'INFO',
-                                'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the log level.", default='INFO')
+        dest : str
+            Name of attribute to be added to parser
 
-    args = parser.parse_args()
-    return args
+        required : str
+            Makes optional arguments required
 
+        help : _helper
+            Contains brief description of argument
 
-def main(archive, volume, jobarray, log_level):
+        Returns
+        -------
+        Namespace
+            args
+        """
+
+        parser = argparse.ArgumentParser(description='PDS DI Data Integrity')
+
+        parser.add_argument('--archive', '-a', dest="archive", required=True,
+                            help="Enter archive - archive to ingest")
+
+        parser.add_argument('--volume', '-v', dest="volume",
+                            help="Enter volume to Ingest")
+
+        parser.add_argument('--jobarray', '-j', dest="jobarray",
+                            help="Enter string to set job array size")
+
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choices=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
+        args = parser.parse_args()
+
+        self.archive = args.archive
+        self.volume = args.volume
+        self.jobarray = args.jobarray
+        self.log_level = args.log_level
+
+def main():
+    args = Args()
+    args.parse_args()
+
     RQ = RedisQueue('DI_ReadyQueue')
 
     PDSinfoDICT = json.load(open(pds_info, 'r'))
     try:
-        archiveID = PDSinfoDICT[archive]['archiveid']
+        archiveID = PDSinfoDICT[args.archive]['archiveid']
     except KeyError:
-        print("\nArchive '{}' not found in {}\n".format(archive, pds_info))
+        print("\nArchive '{}' not found in {}\n".format(args.archive, pds_info))
         print("The following archives are available:")
         for k in PDSinfoDICT.keys():
             print("\t{}".format(k))
         exit()
 
-    logger = logging.getLogger('DI_Queueing.' + archive)
-    level = logging.getLevelName(log_level)
+    logger = logging.getLogger('DI_Queueing.' + args.archive)
+    level = logging.getLevelName(args.log_level)
     logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'DI.log')
     formatter = logging.Formatter(
@@ -60,9 +103,9 @@ def main(archive, volume, jobarray, log_level):
 
     logger.info("DI Queue: %s", RQ.id_name)
     
-    logger.info('Starting %s DI Queueing', archive)
-    if volume:
-        logger.info('Queueing %s Volume', volume)
+    logger.info('Starting %s DI Queueing', args.archive)
+    if args.volume:
+        logger.info('Queueing %s Volume', args.volume)
 
     try:
         session, _ = db_connect(pds_db)
@@ -75,8 +118,8 @@ def main(archive, volume, jobarray, log_level):
           datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
     testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
 
-    if volume:
-        volstr = '%' + volume + '%'
+    if args.volume:
+        volstr = '%' + args.volume + '%'
         testQ = session.query(Files).filter(
             Files.archiveid == archiveID, Files.filename.like(volstr)).filter(
                 or_(cast(Files.di_date, Date) < testing_date,
@@ -89,7 +132,7 @@ def main(archive, volume, jobarray, log_level):
     addcount = 0
     for element in testQ:
         try:
-            RQ.QueueAdd((element.filename, archive))
+            RQ.QueueAdd((element.filename, args.archive))
             addcount = addcount + 1
         except:
             logger.warn('File %s Not Added to DI_ReadyQueue',
@@ -100,5 +143,4 @@ def main(archive, volume, jobarray, log_level):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    sys.exit(main(**vars(args)))
+    sys.exit(main())

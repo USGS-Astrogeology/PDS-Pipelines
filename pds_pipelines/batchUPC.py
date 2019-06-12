@@ -9,24 +9,30 @@ from pds_pipelines.models.pds_models import Files, Archives
 from pds_pipelines.config import pds_info, pds_db, pds_log
 
 
+class Args(object):
+    def __init__(self):
+        pass
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="DI Process")
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description="DI Process")
 
-    parser.add_argument('--log', '-l', dest="log_level",
-                        choices=['DEBUG', 'INFO',
-                                'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the log level.", default='INFO')
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choices=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
 
-    args = parser.parse_args()
-    return args
+        args = parser.parse_args()
+        self.log_level = args.log_level
 
 
-def main(log_level):
+def main():
+    args = Args()
+    args.parse_args()
+
     PDS_info = json.load(open(pds_info, 'r'))
     reddis_queue = RedisQueue('UPC_ReadyQueue')
     logger = logging.getLogger('UPC_Queueing')
-    level = logging.getLevelName(log_level)
+    level = logging.getLevelName(args.log_level)
     logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'Process.log')
     formatter = logging.Formatter(
@@ -76,5 +82,4 @@ def main(log_level):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    main(**vars(args))
+    main()

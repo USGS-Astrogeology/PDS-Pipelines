@@ -20,22 +20,31 @@ from pds_pipelines.Loggy import Loggy
 from pds_pipelines.SubLoggy import SubLoggy
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Processing for Projection on the Web')
-    parser.add_argument('--key',
-                        '-k',
-                        dest='key',
-                        help='Target key')
-    parser.add_argument('--namespace',
-                        '-n',
-                        dest='namespace',
-                        help='Target key')
+class Args(object):
+    def __init__(self):
+        pass
 
-    args = parser.parse_args()
-    return args
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description='Processing for Projection on the Web')
+        parser.add_argument('--key',
+                            '-k',
+                            dest='key',
+                            help='Target key')
+        parser.add_argument('--namespace',
+                            '-n',
+                            dest='namespace',
+                            help='Target key')
+        args = parser.parse_args()
+        self.key = args.key
+        self.namespace = args.namespace
 
 
-def main(key, namespace=None):
+def main():
+    args = Args()
+    args.parse_args()
+    key = args.key
+    namespace = args.namespace
+
     if namespace is None:
         namespace = default_namespace
 
@@ -339,5 +348,4 @@ def main(key, namespace=None):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    sys.exit(main(**vars(args)))
+    sys.exit(main())

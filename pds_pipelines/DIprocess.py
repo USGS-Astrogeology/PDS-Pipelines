@@ -16,23 +16,30 @@ from pds_pipelines.config import pds_db, pds_log, pds_info, lock_obj
 from pds_pipelines.db import db_connect
 from pds_pipelines.models.pds_models import Files
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="DI Process")
+class Args(object):
+    def __init__(self):
+        pass
 
-    parser.add_argument('--log', '-l', dest="log_level",
-                        choices=['DEBUG', 'INFO',
-                                'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the log level.", default='INFO')
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description="DI Process")
 
-    args = parser.parse_args()
-    return args
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choices=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
 
-def main(log_level):
+        args = parser.parse_args()
+        self.log_level = args.log_level
+
+
+def main():
     PDSinfoDICT = json.load(open(pds_info, 'r'))
+    args = Args()
+    args.parse_args()
 
     # Set up logging
     logger = logging.getLogger('DI_Process')
-    level = logging.getLevelName(log_level)
+    level = logging.getLevelName(args.log_level)
     logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'DI.log')
     formatter = logging.Formatter(
@@ -104,5 +111,4 @@ def main(log_level):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    sys.exit(main(**vars(args)))
+    sys.exit(main())

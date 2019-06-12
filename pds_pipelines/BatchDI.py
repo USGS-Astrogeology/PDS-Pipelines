@@ -11,21 +11,28 @@ from pds_pipelines.db import db_connect
 from pds_pipelines.config import pds_info, pds_db, pds_log
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="DI Process")
+class Args(object):
+    def __init__(self):
+        pass
 
-    parser.add_argument('--log', '-l', dest="log_level",
-                        choices=['DEBUG', 'INFO',
-                                'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the log level.", default='INFO')
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description="DI Process")
 
-    args = parser.parse_args()
-    return args
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choices=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
+        args = parser.parse_args()
+        self.log_level = args.log_level
 
 
-def main(log_level):
+def main():
+    args = Args()
+    args.parse_args()
+
     logger = logging.getLogger('DI_Queueing')
-    level = logging.getLevelName(log_level)
+    level = logging.getLevelName(args.log_level)
     logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'DI.log')
     formatter = logging.Formatter(
@@ -61,5 +68,4 @@ def main(log_level):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    main(**vars(args))
+    main()

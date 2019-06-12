@@ -22,44 +22,64 @@ class Autodict(dict):
         return value
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Database synchronization tool')
-
-    parser.add_argument('-p', dest="date",
-                        help="Sync data processed after the specified date")
-
-    parser.add_argument('-i', dest="instrument",
-                        help="Sync data for the specified instrument")
-
-    parser.add_argument('-s', dest="spacecraft",
-                        help="Sync data for the specified spacecraft")
-
-    parser.add_argument('-d', dest="database",
-                        help="Sync only to the specified database on the destination server")
-
-    parser.add_argument('-t', dest="target",
-                        help="Sync for the target, ignore UPC records on other targets")
-
-    parser.add_argument('-v', dest="loglevel",
-                        help="Enable verbose output", action="store_const",
-                        const=logging.INFO, default=logging.WARNING)
-
-    parser.add_argument('-S', dest="statistics",
-                        help="Only display statistics, do not sync data",
-                        action="store_true")
-
-    args = parser.parse_args()
-    return args
+class Args(object):
+    def __init__(self):
+        self.date = None
+        self.instrument = None
+        self.spacecraft = None
+        self.database = None
+        self.target = None
+        self.loglevel = None
+        self.statistics = None
 
 
-def main(date, instrument, spacecraft, database, target, loglevel, statistics):
-    logging.basicConfig(level=loglevel)
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description='Database synchronization tool')
+
+        parser.add_argument('-p', dest="date",
+                            help="Sync data processed after the specified date")
+
+        parser.add_argument('-i', dest="instrument",
+                            help="Sync data for the specified instrument")
+
+        parser.add_argument('-s', dest="spacecraft",
+                            help="Sync data for the specified spacecraft")
+
+        parser.add_argument('-d', dest="database",
+                            help="Sync only to the specified database on the destination server")
+
+        parser.add_argument('-t', dest="target",
+                            help="Sync for the target, ignore UPC records on other targets")
+
+        parser.add_argument('-v', dest="loglevel",
+                            help="Enable verbose output", action="store_const",
+                            const=logging.INFO, default=logging.WARNING)
+
+        parser.add_argument('-S', dest="statistics",
+                            help="Only display statistics, do not sync data",
+                            action="store_true")
+
+        args = parser.parse_args()
+
+        self.date = args.date
+        self.instrument = args.instrument
+        self.spacecraft = args.spacecraft
+        self.database = args.database
+        self.target = args.target
+        self.loglevel = args.loglevel
+        self.statistics = args.statistics
+
+
+def main():
+    args = Args()
+    args.parse_args()
+    logging.basicConfig(level=args.loglevel)
     source_session, _ = db_connect(upc_db)
 
-    upc_ids = get_upc_ids(source_session, date, instrument,
-                          spacecraft, target)
+    upc_ids = get_upc_ids(source_session, args.date, args.instrument,
+                          args.spacecraft, args.target)
 
-    if statistics:
+    if args.statistics:
         get_stats(source_session, upc_ids)
         return
 
@@ -72,14 +92,14 @@ def main(date, instrument, spacecraft, database, target, loglevel, statistics):
         session, _ = db_connect(target)
         target_sessions[target] = session
 
-    instrument = get_instrument(source_session, instrument,
-                                spacecraft)
+    instrument = get_instrument(source_session, args.instrument,
+                                args.spacecraft)
 
     for target_session in target_sessions.values():
         sync_instrument(target_session, instrument)
 
-    instrument_keywords = get_keywords(source_session, instrument,
-                                       spacecraft)
+    instrument_keywords = get_keywords(source_session, args.instrument,
+                                       args.spacecraft)
     common_keywords = get_keywords(source_session, 'COMMON')
 
     # Sync keywords, instruments with all databases
@@ -383,6 +403,5 @@ def sync_upc_id(source_session, dest_sessions, upc_id, meta_types):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    main(**vars(args))
+    main()
 

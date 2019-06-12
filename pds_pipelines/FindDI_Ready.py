@@ -16,24 +16,35 @@ from pds_pipelines.db import db_connect
 from pds_pipelines.models.pds_models import Files
 from pds_pipelines.config import pds_info, pds_db, pds_log
 
+class Args(object):
+    """
+    Attributes
+    ----------
+    archive
+    volume
+    """
+    def __init__(self):
+        pass
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Find Arcives for DI')
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description='Find Arcives for DI')
 
-    parser.add_argument('--archive', '-a', dest="archive",
-                        help="Enter archive to test for DI")
+        parser.add_argument('--archive', '-a', dest="archive",
+                            help="Enter archive to test for DI")
 
-    parser.add_argument('--volume', '-v', dest="volume",
-                        help="Enter Volume to Test")
+        parser.add_argument('--volume', '-v', dest="volume",
+                            help="Enter Volume to Test")
 
-    parser.add_argument('--log', '-l', dest="log_level",
-                        choices=['DEBUG', 'INFO',
-                                'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the log level.", default='INFO')
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choices=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
 
 
-    args = parser.parse_args()
-    return args
+        args = parser.parse_args()
+        self.archive = args.archive
+        self.volume = args.volume
+        self.log_level = args.log_level
 
 
 def archive_expired(session, archiveID, testing_date=None):
@@ -94,19 +105,23 @@ def volume_expired(session, archiveID, volume, testing_date=None):
     return expired
 
 
-def main(archive, volume, log_level):
+def main():
+
+    args = Args()
+    args.parse_args()
+
     PDSinfoDICT = json.load(open(pds_info, 'r'))
     try:
-        archiveID = PDSinfoDICT[archive]['archiveid']
+        archiveID = PDSinfoDICT[args.archive]['archiveid']
     except KeyError:
-        print("\nArchive '{}' not found in {}\n".format(archive, pds_info))
+        print("\nArchive '{}' not found in {}\n".format(args.archive, pds_info))
         print("The following archives are available:")
         for k in PDSinfoDICT.keys():
             print("\t{}".format(k))
         exit()
 
-    logger = logging.getLogger('DI_Ready.' + archive)
-    level = logging.getLevelName(log_level)
+    logger = logging.getLogger('DI_Ready.' + args.archive)
+    level = logging.getLevelName(args.log_level)
     logger.setLevel(level)
     timestr = time.strftime("%Y%m%d_%H%M%S")
     logFileHandle = logging.FileHandler(pds_log + 'DI_Ready_' + timestr + '.log')
@@ -124,7 +139,7 @@ def main(archive, volume, log_level):
     try:
         # Throws away 'engine' information
         session, _ = db_connect(pds_db)
-        logger.info("%s", archive)
+        logger.info("%s", args.archive)
         logger.info("Database Connection Success")
     except Exception as e:
         logger.error("%s", e)
@@ -134,22 +149,21 @@ def main(archive, volume, log_level):
               - datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
         testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
 
-        if volume:
-            expired = volume_expired(session, archiveID, volume, testing_date)
+        if args.volume:
+            expired = volume_expired(session, archiveID, args.volume, testing_date)
             if expired.count():
-                logger.info("Volume %s DI Ready: %s Files", volume,
+                logger.info("Volume %s DI Ready: %s Files", args.volume,
                             str(expired.count()))
             else:
-                logger.info('Volume %s DI Current', volume)
+                logger.info('Volume %s DI Current', args.volume)
         else:
             expired = archive_expired(session, archiveID, testing_date)
             if expired.count():
-                logger.info('Archive %s DI Ready: %s Files', archive,
+                logger.info('Archive %s DI Ready: %s Files', args.archive,
                             str(expired.count()))
             else:
-                logger.info('Archive %s DI Current', archive)
+                logger.info('Archive %s DI Current', args.archive)
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    sys.exit(main(**vars(args)))
+    sys.exit(main())

@@ -558,25 +558,36 @@ class jobXML(object):
         return listArray
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Service job manager')
-    parser.add_argument('--key',
-                        '-k',
-                        dest='key',
-                        help="Target key -- if blank, process first element in queue")
-    parser.add_argument('--namespace',
-                        '-n',
-                        dest='namespace',
-                        help="Queue namespace")
-    parser.add_argument('--norun',
-                        help="Set up queues and write out SBATCH script, but do not submit it to SLURM",
-                        action="store_true")
+class Args(object):
 
-    args = parser.parse_args()
-    return args
+    def __init__(self):
+        pass
 
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description='Service job manager')
+        parser.add_argument('--key',
+                            '-k',
+                            dest='key',
+                            help="Target key -- if blank, process first element in queue")
+        parser.add_argument('--namespace',
+                            '-n',
+                            dest='namespace',
+                            help="Queue namespace")
+        parser.add_argument('--norun',
+                            help="Set up queues and write out SBATCH script, but do not submit it to SLURM",
+                            action="store_true")
 
-def main(key, norun, namespace=None):
+        args = parser.parse_args()
+        self.key = args.key
+        self.namespace = args.namespace
+        self.norun = args.norun
+
+def main():
+    args = Args()
+    args.parse_args()
+    key = args.key
+    namespace = args.namespace
+
     if namespace is None:
         namespace = default_namespace
 
@@ -1011,7 +1022,7 @@ def main(key, norun, namespace=None):
         logger.error('SBATCH File %s Not Found', SBfile)
 
 
-    if norun:
+    if args.norun:
         logger.info('No-run mode, will not submit HPC job.')
     else:
         try:
@@ -1023,5 +1034,4 @@ def main(key, norun, namespace=None):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    sys.exit(main(**vars(args)))
+    sys.exit(main())

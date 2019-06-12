@@ -10,30 +10,42 @@ from pds_pipelines.db import db_connect
 from pds_pipelines.models.pds_models import Files
 from pds_pipelines.config import pds_info, pds_log, pds_db
 
-def parse_args():
+class Args(object):
+    def __init__(self):
+        pass
 
-    parser = argparse.ArgumentParser(description='PDS DI Data Integrity')
+    def parse_args(self):
 
-    parser.add_argument('--archive', '-a', dest="archive", required=True,
-                        help="Enter archive - archive to ingest")
+        parser = argparse.ArgumentParser(description='PDS DI Data Integrity')
 
-    parser.add_argument('--volume', '-v', dest="volume",
-                        help="Enter voluem to Ingest")
+        parser.add_argument('--archive', '-a', dest="archive", required=True,
+                            help="Enter archive - archive to ingest")
 
-    parser.add_argument('--search', '-s', dest="search",
-                        help="Enter string to search for")
+        parser.add_argument('--volume', '-v', dest="volume",
+                            help="Enter voluem to Ingest")
 
-    parser.add_argument('--log', '-l', dest="log_level",
-                        choices=['DEBUG', 'INFO', 'WARNING',
-                                'ERROR', 'CRITICAL'],
-                        help="Set the log level.", default='INFO')
+        parser.add_argument('--search', '-s', dest="search",
+                            help="Enter string to search for")
 
-    args = parser.parse_args()
-    return args
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choices=['DEBUG', 'INFO', 'WARNING',
+                                    'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
 
-def main(archive, volume, search, log_level):
-    logger = logging.getLogger('Browse_Queueing.' + archive)
-    level = logging.getLevelName(log_level)
+        args = parser.parse_args()
+
+        self.archive = args.archive
+        self.volume = args.volume
+        self.search = args.search
+        self.log_level = args.log_level
+
+
+def main():
+    args = Args()
+    args.parse_args()
+
+    logger = logging.getLogger('Browse_Queueing.' + args.archive)
+    level = logging.getLevelName(args.log_level)
     logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log+'Process.log')
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s, %(message)s')
@@ -43,7 +55,7 @@ def main(archive, volume, search, log_level):
     logger.info('Starting Process')
 
     PDSinfoDICT = json.load(open(pds_info, 'r'))
-    archiveID = PDSinfoDICT[archive]['archiveid']
+    archiveID = PDSinfoDICT[args.archive]['archiveid']
 
     RQ = RedisQueue('Browse_ReadyQueue')
     logger.info("Browse Queue: %s", RQ.id_name)
@@ -55,8 +67,8 @@ def main(archive, volume, search, log_level):
         logger.error('Database Connection Error')
         return 1
 
-    if volume:
-        volstr = '%' + volume + '%'
+    if args.volume:
+        volstr = '%' + args.volume + '%'
         qOBJ = session.query(Files).filter(Files.archiveid == archiveID,
                                            Files.filename.like(volstr),
                                            Files.upc_required == 't')
@@ -66,14 +78,13 @@ def main(archive, volume, search, log_level):
     if qOBJ:
         addcount = 0
         for element in qOBJ:
-            fname = PDSinfoDICT[archive]['path'] + element.filename
+            fname = PDSinfoDICT[args.archive]['path'] + element.filename
             fid = element.fileid
-            RQ.QueueAdd((fname, fid, archive))
+            RQ.QueueAdd((fname, fid, args.archive))
             addcount = addcount + 1
 
         logger.info('Files Added to UPC Queue: %s', addcount)
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    sys.exit(main(**vars(args)))
+    sys.exit(main())

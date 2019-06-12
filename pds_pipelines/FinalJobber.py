@@ -9,30 +9,39 @@ from pds_pipelines.HPCjob import HPCjob
 from pds_pipelines.config import pds_log, slurm_log, cmd_dir, scratch, default_namespace
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="DI Process")
+class Args(object):
+    def __init__(self):
+        pass
 
-    parser.add_argument('--log', '-l', dest="log_level",
-                        choices=['DEBUG', 'INFO',
-                                'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the log level.", default='INFO')
+    def parse_args(self):
+        parser = argparse.ArgumentParser(description="DI Process")
 
-    parser.add_argument('--namespace',
-                        '-n',
-                        dest='namespace',
-                        help="Queue namespace")
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choices=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
+        parser.add_argument('--namespace',
+                            '-n',
+                            dest='namespace',
+                            help="Queue namespace")
 
 
-    args = parser.parse_args()
-    return args
+        args = parser.parse_args()
+        self.log_level = args.log_level
+        self.namespace = args.namespace
 
 
-def main(log_level, namespace=None):
+def main():
+    args = Args()
+    args.parse_args()
+    namespace = args.namespace
+
     if namespace is None:
         namespace = default_namespace
 
     logger = logging.getLogger('FinalJobber')
-    level = logging.getLevelName(log_level)
+    level = logging.getLevelName(args.log_level)
     logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log+'Service.log')
     formatter = logging.Formatter(
@@ -84,5 +93,4 @@ def main(log_level, namespace=None):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    sys.exit(main(**vars(args)))
+    sys.exit(main())

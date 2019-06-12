@@ -16,26 +16,34 @@ from pds_pipelines.config import pds_info, pds_log, pds_db, archive_base, web_ba
 from pds_pipelines.models.pds_models import Files
 
 
-def parse_args():
+class Args(object):
+    def __init__(self):
+        pass
 
-    parser = argparse.ArgumentParser(description='PDS DI Database Ingest')
+    def parse_args(self):
 
-    parser.add_argument('--override', dest='override', action='store_true')
-    parser.set_defaults(override=False)
+        parser = argparse.ArgumentParser(description='PDS DI Database Ingest')
 
-    parser.add_argument('--log', '-l', dest="log_level",
-                        choices=['DEBUG', 'INFO',
-                                'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the log level.", default='INFO')
+        parser.add_argument('--override', dest='override', action='store_true')
+        parser.set_defaults(override=False)
 
-    args = parser.parse_args()
-    return args
+        parser.add_argument('--log', '-l', dest="log_level",
+                            choices=['DEBUG', 'INFO',
+                                    'WARNING', 'ERROR', 'CRITICAL'],
+                            help="Set the log level.", default='INFO')
+
+        args = parser.parse_args()
+        self.log_level = args.log_level
+        self.override = args.override
 
 
-def main(log_level, override):
+def main():
 
+    args = Args()
+    args.parse_args()
+    override = args.override
     logger = logging.getLogger('Ingest_Process')
-    level = logging.getLevelName(log_level)
+    level = logging.getLevelName(args.log_level)
     logger.setLevel(level)
     logFileHandle = logging.FileHandler(pds_log + 'Ingest.log')
     print("Log File: {}Ingest.log".format(pds_log))
@@ -172,5 +180,4 @@ def main(log_level, override):
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    sys.exit(main(**vars(args)))
+    sys.exit(main())
