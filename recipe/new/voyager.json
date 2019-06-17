@@ -49,6 +49,18 @@
                 "from_": "value",
                 "cknadir": "yes",
                 "cksmithed": "yes"
+            },
+            "voycal": {
+                "from_": "value",
+                "to": "value"
+            },
+            "cam2map": {
+                "from": "value",
+                "to": "value",
+                "map": "value",
+                "matchmap": "no",
+                "pixres": "value",
+                "defaultrange": "value"
             }
         }
     },
