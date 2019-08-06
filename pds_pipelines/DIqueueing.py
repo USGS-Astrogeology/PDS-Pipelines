@@ -102,7 +102,7 @@ def main():
     logger.addHandler(logFileHandle)
 
     logger.info("DI Queue: %s", RQ.id_name)
-    
+
     logger.info('Starting %s DI Queueing', args.archive)
     if args.volume:
         logger.info('Queueing %s Volume', args.volume)
@@ -113,6 +113,16 @@ def main():
     except:
         logger.error('DataBase Connection: Error')
         return 1
+
+
+    if args.volume:
+        volstr = '%' + args.volume + '%'
+        vol_exists = session.query(Files).filter(
+            Files.archiveid == archiveID, Files.filename.like(volstr)).first()
+        if not vol_exists:
+            print(f"No files exist in the database for volume \"{args.volume}\"."
+            "  Either the volume does not exist or it has not been properly ingested.\n")
+            exit()
 
     td = (datetime.datetime.now(pytz.utc) -
           datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
