@@ -49,9 +49,9 @@ def main(key, namespace=None):
     RQ_lock = RedisLock(lock_obj)
     RQ_lock.add({'MAP':'1'})
 
-    if int(RQ_file.QueueSize()) == 0 and RQ_lock.available('MAP'):
+    if int(RQ_file.QueueSize()) == 0:
         print("No Files Found in Redis Queue")
-    else:
+    elif RQ_lock.available('MAP'):
         jobFile = RQ_file.Qfile2Qwork(RQ_file.getQueueName(),
                                       RQ_work.getQueueName())
 
