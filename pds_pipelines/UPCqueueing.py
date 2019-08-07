@@ -32,12 +32,17 @@ class Args(object):
                                     'WARNING', 'ERROR', 'CRITICAL'],
                             help="Set the log level.", default='INFO')
 
+        parser.add_argument('--filter', '-f', dest="query_filter",
+                            help="An additional substring on which to filter" +
+                            " the files that will be queued for upc processing")
+
         args = parser.parse_args()
 
         self.archive = args.archive
         self.volume = args.volume
         self.search = args.search
         self.log_level = args.log_level
+        self.query_filter = args.query_filter
 
 
 def main():
@@ -85,6 +90,10 @@ def main():
     else:
         qOBJ = session.query(Files).filter(Files.archiveid == archiveID,
                                            Files.upc_required == 't')
+    if args.query_filter:
+        qf = '%' + args.query_filter + '%'
+        qOBJ = qOBJ.filter(Files.filename.like(qf))
+
     if qOBJ:
         addcount = 0
         for element in qOBJ:
