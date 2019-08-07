@@ -11,7 +11,7 @@
         "archiveid": "53",
         "path": "/pds_san/PDS_Archive/Cassini/ISS/",
 	"bandbinQuery": "FilterName",
-	"upc_reqs": ["/data/",".LBL"]
+	"upc_reqs": ["/data/",".IMG"]
     },
     "cassini_radar": {
         "archiveid": "51",
