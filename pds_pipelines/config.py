@@ -52,3 +52,6 @@ lock_obj = 'processes'
 upc_error_queue = 'UPC_ErrorQueue'
 
 disk_usage_ratio = 0.4
+
+# Path where the JSON summary views are written to
+summaries_path = '/home/kdlee/builds/PDS-Pipelines/json'

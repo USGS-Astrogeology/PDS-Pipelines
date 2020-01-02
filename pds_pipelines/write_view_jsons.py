@@ -1,5 +1,5 @@
 from pds_pipelines.db import db_connect
-from pds_pipelines.config import upc_db, view_path
+from pds_pipelines.config import upc_db, summaries_path
 import os
 import json
 
@@ -55,7 +55,7 @@ def main(user_args):
     if user_args.path:
         path = user_args.path
     else:
-        path = view_path
+        path = summaries_path
 
     Session, _ = db_connect(upc_db)
     session = Session()
