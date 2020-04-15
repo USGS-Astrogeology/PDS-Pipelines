@@ -3,16 +3,16 @@
     "src": "/pds_san/PDS_Archive/MESSENGER/",
     "upc": {
         "recipe": {
-            "mdis2isis": {
+            "isis.mdis2isis": {
                 "from_": "{{inputfile}}",
                 "to": "{{no_extension_inputfile}}.cub"
             },
-            "spiceinit": {
+            "isis.spiceinit": {
                 "from_": "{{no_extension_inputfile}}.cub",
                 "cknadir": "yes",
                 "cksmithed": "yes"
             },
-            "footprintinit": {
+            "isis.footprintinit": {
                 "from_": "{{no_extension_inputfile}}.cub",
                 "increaseprecision": "yes",
                 "inctype": "vertices",
@@ -20,7 +20,7 @@
                 "maxemission": "89.5",
                 "maxincidence": "120.0"
             },
-            "caminfo": {
+            "isis.caminfo": {
                 "from_": "{{no_extension_inputfile}}.cub",
                 "to": "{{cam_info_file}}",
                 "geometry": "yes",

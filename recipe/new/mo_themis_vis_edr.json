@@ -3,24 +3,24 @@
     "src": "/pds_san/PDS_Archive/Mars_Odyssey/",
     "upc": {
         "recipe": {
-            "thmproc": {
+            "isis.thmproc": {
                 "from_": "{{inputfile}}",
                 "to": "{{no_extension_inputfile}}.cub",
                 "mapping": "no",
                 "remove": "no"
             },
-            "handmos": {
+            "isis.handmos": {
                 "from_": "{{no_extension_inputfile}}.raw.even.cub",
                 "mosaic": "{{no_extension_inputfile}}.raw.odd.cub",
                 "priority": "beneath"
             },
-            "footprintinit": {
+            "isis.footprintinit": {
                 "from_": "{{no_extension_inputfile}}.raw.odd.cub",
                 "increaseprecision": "yes",
                 "inctype": "vertices",
                 "numvertices": "20"
             },
-            "caminfo": {
+            "isis.caminfo": {
                 "from_": "{{no_extension_inputfile}}.raw.odd.cub",
                 "to": "{{cam_info_file}}",
                 "geometry": "yes",

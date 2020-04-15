@@ -14,7 +14,7 @@ from glob import glob
 import pvl
 import json
 from sqlalchemy import and_
-from pysis import isis
+from pds_pipelines import available_modules
 from pysis.exceptions import ProcessError
 
 from pds_pipelines.redis_lock import RedisLock
@@ -451,9 +451,10 @@ def generate_processes(inputfile, archive, logger):
 def process(processes, workarea_pwd, logger):
     # iterate through functions from the processes dictionary
     failing_command = ''
-    for command, keywargs in processes.items():
+    for process, keywargs in processes.items():
+        module, command = process.split('.')
         # load a function into func
-        func = getattr(isis, command)
+        func = getattr(available_modules[module], command)
         try:
             os.chdir(workarea_pwd)
             # execute function
@@ -526,7 +527,7 @@ def main(user_args):
 
         if not os.path.isfile(inputfile):
             RQ_error.QueueAdd(f'Unable to locate or access {inputfile} during UPC processing')
-            logger.warn("%s is not a file\n", inputfile)
+            logger.debug("%s is not a file\n", inputfile)
             exit()
 
         # Build URL for edr_source based on archive path from PDSinfo.json
@@ -553,11 +554,11 @@ def main(user_args):
         create_json_keywords_record(caminfoOUT, upc_id, inputfile, failing_command, upc_session_maker, logger)
 
         try:
-            session.flush()
+            pds_session = pds_session_maker()
+            pds_session.flush()
         except:
-            logger.warning("Unable to flush database connection")
+            logger.debug("Unable to flush database connection")
 
-        pds_session = pds_session_maker()
         AddProcessDB(pds_session, fid, True)
         pds_session.close()
 
