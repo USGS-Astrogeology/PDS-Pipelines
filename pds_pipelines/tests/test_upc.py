@@ -318,7 +318,7 @@ def test_generate_processes():
 def test_process_isis():
     logger = logging.getLogger('UPC_Process')
 
-    processes = {'getsn': {'from_': '/Path/to/some/cube.cub'}}
+    processes = {'isis.getsn': {'from_': '/Path/to/some/cube.cub'}}
 
     failing_command = process(processes, '/', logger)
     assert failing_command == ''
@@ -326,7 +326,7 @@ def test_process_isis():
 def test_bad_process_isis():
     logger = logging.getLogger('UPC_Process')
 
-    processes = {'spiceinit': {'from_': '/Path/to/some/cube.cub'}}
+    processes = {'isis.spiceinit': {'from_': '/Path/to/some/cube.cub'}}
 
     failing_command = process(processes, '/', logger)
     assert failing_command == 'spiceinit'
