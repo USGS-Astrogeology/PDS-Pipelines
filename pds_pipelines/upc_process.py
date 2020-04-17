@@ -68,7 +68,12 @@ def getISISid(infile):
     newisisSerial : str
         The serial number of the input file.
     """
-    serial_num = available_modules['isis'].getsn(from_=infile)
+    try:
+        serial_num = available_modules['isis'].getsn(from_=infile)
+    except (ProcessError, KeyError) as e:
+        # If either isis was not imported or a serial number could not be
+        # generated from the infile set the serial number to an empty string
+        serial_num = ''
     # in later versions of getsn, serial_num is returned as bytes
     if isinstance(serial_num, bytes):
         serial_num = serial_num.decode()
