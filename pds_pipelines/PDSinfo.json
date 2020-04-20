@@ -124,7 +124,9 @@
     },
     "mro_hirise_rdr": {
         "archiveid": "125",
-        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/"
+        "path": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/RDR",
+	"bandbinQuery": "Name",
+	"upc_reqs": [".LBL"]
     },
     "mro_marci": {
         "archiveid": "127",

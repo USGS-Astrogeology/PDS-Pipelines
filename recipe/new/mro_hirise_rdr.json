@@ -1,12 +1,42 @@
 {
-    "inst": "mro_hirise_rdr_esp",
-    "src": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/",
+    "inst": "mro_hirise_rdr",
+    "src": "/pds_san/PDS_Archive/Mars_Reconnaissance_Orbiter/HiRISE/RDR",
     "upc": {
         "recipe": {
-            "pds2isis": {
-                "from_": "value",
-                "to": "value"
-            }
+            "isis.hirdr2isis": {
+                "from_": "{{inputfile}}",
+                "to": "{{cam_info_file}}"
+            },
+            "gdal_translate": {
+                "scale": "1 65535 1 1",
+                "a_nodata": "0",
+                "ot": "Byte",
+                "tr": "25 25",
+                "{{no_extension_inputfile}}.cub",
+                "{{no_extension_inputfile}}.tif"
+                
+            },
+            "gdal_polygonize": {
+                "8",
+                "f": ""ESRI Shapefile"",
+                "{{no_extension_inputfile}}.tif",
+                "{{no_extension_inputfile}}_footprint.shp",
+                "{{no_extension_inputfile}}_footprint"
+            },
+            "ogr2ogr": {
+                 "f": "GeoJSON",
+                 "t_srs": ""+proj=longlat +R=3396190 +no_defs"",
+                 "{{no_extension_inputfile}}_footprint.json",
+                 "{{no_extension_inputfile}}_footprint.shp"
+            },
+        },
+        "search_term_mapping": {
+                "meangroundresolution": "PixelResolution",
+                "solarlongitude": "SolarLongitude",
+                "emissionangle": "EmissionAngle",
+                "incidenceangle": "IncidenceAngle",
+                "phaseangle": "PhaseAngle",
+                "starttime": "StartTime"
         }
     },
     "pow": {
