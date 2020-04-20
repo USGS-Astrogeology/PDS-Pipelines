@@ -256,7 +256,7 @@ def test_search_terms_no_datafile(mocked_product_id, mocked_keyword, mocked_init
     upc_id = cam_info_dict['upcid']
 
     with pytest.raises(sqlalchemy.exc.IntegrityError):
-        create_search_terms_record(pds_label, '/Path/to/caminfo.pvl', upc_id, '/Path/to/my/cube.cub', session_maker)
+        create_search_terms_record(pds_label, '/Path/to/caminfo.pvl', upc_id, '/Path/to/my/cube.cub', session_maker = session_maker)
 
 @patch('pds_pipelines.upc_keywords.UPCkeywords.__init__', return_value = None)
 def test_json_keywords_insert(mocked_init, session, session_maker, pds_label):
@@ -306,7 +306,7 @@ def test_generate_processes():
 
     inputfile = "./pds_pipelines/tests/data/5600r.lbl"
     fid = "1"
-    recipe_file = recipe_base + "/" + archive + '.json'
+    recipe_file = recipe_base + "/galileo_ssi_edr.json"
     with open(recipe_file) as fp:
         original_recipe = json.load(fp)['upc']['recipe']
         recipe_string = json.dumps(original_recipe)
