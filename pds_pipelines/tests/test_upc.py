@@ -32,6 +32,8 @@ from pds_pipelines.upc_process import *
 
 from pds_pipelines.upc_process import create_datafiles_record, create_search_terms_record, create_json_keywords_record, get_target_id, getISISid, process, generate_processes
 from pds_pipelines.models import upc_models as models
+from pds_pipelines.config import recipe_base
+
 
 @pytest.fixture
 def tables():
@@ -211,7 +213,7 @@ def test_search_terms_insert(mocked_product_id, mocked_keyword, mocked_init, ses
 
     models.DataFiles.create(session, upcid = upc_id)
 
-    create_search_terms_record(pds_label, '/Path/to/caminfo.pvl', upc_id, '/Path/to/my/cube.cub', session_maker)
+    create_search_terms_record(pds_label, '/Path/to/caminfo.pvl', upc_id, '/Path/to/my/cube.cub', session_maker = session_maker)
     resp = session.query(SearchTerms).filter(SearchTerms.upcid == upc_id).first()
 
     for key in cam_info_dict.keys():
@@ -230,7 +232,7 @@ def test_search_terms_keyword_exception(mocked_product_id, session, session_make
     upc_id = cam_info_dict['upcid']
     models.DataFiles.create(session, upcid = upc_id)
 
-    create_search_terms_record(pds_label, "", upc_id, '/Path/to/my/cube.cub', session_maker)
+    create_search_terms_record(pds_label, "", upc_id, '/Path/to/my/cube.cub', session_maker = session_maker)
     resp = session.query(SearchTerms).filter(SearchTerms.upcid == upc_id).first()
     assert resp.starttime == None
     assert resp.solarlongitude == None
@@ -304,13 +306,12 @@ def test_generate_processes():
 
     inputfile = "./pds_pipelines/tests/data/5600r.lbl"
     fid = "1"
-    archive = "galileo_ssi_edr"
-
-    processes, inputfile, caminfoOUT, pwd = generate_processes(inputfile, archive, logger)
-
     recipe_file = recipe_base + "/" + archive + '.json'
     with open(recipe_file) as fp:
         original_recipe = json.load(fp)['upc']['recipe']
+        recipe_string = json.dumps(original_recipe)
+
+    processes, inputfile, caminfoOUT, pwd = generate_processes(inputfile, recipe_string, logger)
 
     for k, v in processes.items():
         assert original_recipe[k].keys() == v.keys()

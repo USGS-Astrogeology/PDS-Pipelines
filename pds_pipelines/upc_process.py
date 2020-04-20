@@ -444,7 +444,7 @@ def generate_processes(inputfile, recipe_string, logger):
     no_extension_inputfile = os.path.splitext(inputfile)[0]
     cam_info_file = os.path.splitext(inputfile)[0] + '.caminfo.pvl'
 
-    template = jinja2.Template(recipe_str)
+    template = jinja2.Template(recipe_string)
     recipe_str = template.render(inputfile=inputfile,
                                  no_extension_inputfile=no_extension_inputfile,
                                  cam_info_file=cam_info_file)
