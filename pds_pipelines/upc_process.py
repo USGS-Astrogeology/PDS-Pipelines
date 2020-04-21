@@ -547,9 +547,11 @@ def main(user_args):
         with open(recipe_file) as fp:
             upc_json = json.load(fp)['upc']
             recipe_string = json.dumps(upc_json['recipe'])
+            # Attempt to get the optional search_term_mapping for the upc
+            # process
             try:
                 search_term_mapping = upc_json['search_term_mapping']
-            except:
+            except KeyError:
                 search_term_mapping = {}
 
         processes, infile, caminfoOUT, workarea_pwd = generate_processes(inputfile,recipe_string, logger)
