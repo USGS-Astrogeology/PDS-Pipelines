@@ -63,13 +63,14 @@ class jobXML(object):
 
         # try to filter list based on upc_reqs.  If upc_reqs isn't specified, just skip the filtering step
         # ps can't use 'filter' because not all elements have upc_reqs, so they may raise exceptions.
-        for item in candidates:
-            try:
-                if not all(x in file_name for x in self.pds_info[item]['upc_reqs']):
-                    candidates.remove(item)
-            except KeyError:
-                # Intentionally left blank.  Unspecified upc_reqs is valid -- there's just nothing to do for those elements
-                pass
+        if len(candidates) > 1:
+            for item in candidates:
+                try:
+                    if not all(x in file_name for x in self.pds_info[item]['upc_reqs']):
+                        candidates.remove(item)
+                except KeyError:
+                    # Intentionally left blank.  Unspecified upc_reqs is valid -- there's just nothing to do for those elements
+                    pass
 
         # If multiple candidates still exist, then it is not possible to uniquely identify the clean name
         if len(candidates) > 1:
