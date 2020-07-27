@@ -285,7 +285,7 @@ def create_datafiles_record(label, edr_source, input_cube, session_maker):
     datafile_attributes['isisid'] = getISISid(input_cube)
 
     # Attempt to get the product id from the original label
-    product_id = getPDSid(input_cube + ".cub")
+    product_id = getPDSid(input_cube)
 
     datafile_attributes['productid'] = product_id
     datafile_attributes['instrumentid'] = get_instrument_id(label, session_maker)
@@ -361,7 +361,7 @@ def create_search_terms_record(label, cam_info_pvl, upc_id, input_cube, footprin
 
     search_term_attributes['upcid'] = upc_id
 
-    product_id = getPDSid(input_cube + ".cub")
+    product_id = getPDSid(input_cube)
 
     search_term_attributes['pdsproductid'] = product_id
 
@@ -593,10 +593,10 @@ def main(user_args):
         pds_label = pvl.load(inputfile)
 
         ######## Generate DataFiles Record ########
-        upc_id = create_datafiles_record(pds_label, edr_source, infile, upc_session_maker)
+        upc_id = create_datafiles_record(pds_label, edr_source, infile + '.cub', upc_session_maker)
 
         ######## Generate SearchTerms Record ########
-        create_search_terms_record(pds_label, caminfoOUT, upc_id, infile, footprint_file, search_term_mapping, upc_session_maker)
+        create_search_terms_record(pds_label, caminfoOUT, upc_id, infile + '.cub', footprint_file, search_term_mapping, upc_session_maker)
 
         ######## Generate JsonKeywords Record ########
         create_json_keywords_record(caminfoOUT, upc_id, inputfile, failing_command, upc_session_maker, logger)
