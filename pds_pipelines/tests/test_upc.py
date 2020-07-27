@@ -168,12 +168,8 @@ def test_bad_spacecraftname_instrument_insert(session, session_maker):
 @patch('pds_pipelines.upc_process.getISISid', return_value = 'ISISSERIAL')
 @patch('pds_pipelines.upc_process.getPDSid', return_value = 'PRODUCTID')
 def test_datafiles_insert(mocked_pds_id, mocked_isis_id, session, session_maker, pds_label):
-    pds_label = PVLModule({'^IMAGE': ('5600R.IMG', 12),
-                           'SPACECRAFT_NAME': 'TEST CRAFT',
-                           'INSTRUMENT_NAME': 'TEST INSTRUMENT',
-                           'TARGET_NAME': 'TEST TARGET'})
     input_cube = '/Path/to/my/cube.cub'
-    upc_id = create_datafiles_record(pds_label, '/Path/to/label/location/label.lbl', '/Path/to/my/cube', session_maker)
+    upc_id = create_datafiles_record(pds_label, '/Path/to/label/location/label.lbl', input_cube, session_maker)
     mocked_isis_id.assert_called_with(input_cube)
     input_cube = '/Path/to/my/cube'
     mocked_pds_id.assert_called_with(input_cube)
