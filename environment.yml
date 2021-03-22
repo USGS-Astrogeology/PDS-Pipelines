@@ -7,7 +7,7 @@ dependencies:
     - psycopg2
     - lxml
     - pytz
-    - sqlalchemy
+    - sqlalchemy=1.3
     - geoalchemy2
     - pvl
     - pysis
