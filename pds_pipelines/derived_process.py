@@ -8,6 +8,7 @@ import errno
 from ast import literal_eval
 from json import JSONDecoder
 
+from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
 
 from pds_pipelines.redis_queue import RedisQueue
@@ -67,7 +68,7 @@ def main():
     log_file_handle.setFormatter(formatter)
     logger.addHandler(log_file_handle)
     logger = logging.LoggerAdapter(logger, context)
-    
+
     RQ_derived = RedisQueue('Derived_ReadyQueue')
     RQ_error = RedisQueue(upc_error_queue)
     RQ_lock = RedisLock(lock_obj)
@@ -104,7 +105,7 @@ def main():
             if not failing_command:
                 session = upc_session_maker()
                 src = inputfile.replace(workarea, web_base)
-                datafile = session.query(DataFiles).filter(DataFiles.source==src).first()
+                datafile = session.query(DataFiles).filter(or_(DataFiles.source==src, DataFiles.detached_label==src)).first()
                 upc_id = datafile.upcid
                 try:
                     add_url(derived_product, upc_id, upc_session_maker)
