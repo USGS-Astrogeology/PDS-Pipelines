@@ -15,6 +15,7 @@ from glob import glob
 import pvl
 import json
 from sqlalchemy import exc, and_
+from sqlalchemy.exc import SQLAlchemyError
 from pds_pipelines.available_modules import *
 from osgeo import ogr
 
@@ -29,7 +30,7 @@ from pds_pipelines.pvl_utils import load_pvl, find_keyword
 from pds_pipelines.db import db_connect
 from pds_pipelines.models import pds_models
 from pds_pipelines.models.upc_models import SearchTerms, Targets, Instruments, DataFiles, JsonKeywords, BaseMixin
-from pds_pipelines.config import pds_log, workarea, keyword_def, pds_db, upc_db, lock_obj, upc_error_queue, web_base, archive_base, recipe_base
+from pds_pipelines.config import pds_log, workarea, keyword_def, upc_db, lock_obj, upc_error_queue, web_base, archive_base, recipe_base
 from pds_pipelines.utils import generate_processes, process, add_process_db, get_isis_id
 
 
@@ -347,7 +348,6 @@ def parse_args():
 
 def main(user_args):
     upc_session_maker, upc_engine = db_connect(upc_db)
-    pds_session_maker, pds_engine = db_connect(pds_db)
 
     persist = user_args.persist
     log_level = user_args.log_level
@@ -381,6 +381,13 @@ def main(user_args):
     RQ_lock = RedisLock(lock_obj)
     # If the queue isn't registered, add it and set it to "running"
     RQ_lock.add({RQ_main.id_name: '1'})
+
+    try:
+        session = upc_session_maker()
+        session.close()
+    except TypeError as e:
+        logger.error("Unable to create a database session/connection to the upc database: %s", e)
+        raise e
 
     # if there are items in the redis queue
     if int(RQ_main.QueueSize()) > 0 and RQ_lock.available(RQ_main.id_name):
@@ -422,71 +429,63 @@ def main(user_args):
                                        footprint_file=footprint_file)
         failing_command, _ = process(processes, workarea, logger)
 
-        if upc_session_maker and pds_session_maker:
-            pds_label = pvl.load(inputfile)
+        pds_label = pvl.load(inputfile)
 
-            target_name = get_target_name(pds_label)
+        target_name = get_target_name(pds_label)
 
-            try:
-                session = upc_session_maker()
-                target_qobj = Targets.create(session, targetname=target_name,
-                                                      displayname=target_name.title(),
-                                                      system=target_name)
-                target_id = target_qobj.targetid
-                session.close()
+        try:
+            session = upc_session_maker()
+            target_qobj = Targets.create(session, targetname=target_name,
+                                                  displayname=target_name.title(),
+                                                  system=target_name)
+            target_id = target_qobj.targetid
+            session.close()
 
-                instrument_name = get_instrument_name(pds_label)
-                spacecraft_name = get_spacecraft_name(pds_label)
+            instrument_name = get_instrument_name(pds_label)
+            spacecraft_name = get_spacecraft_name(pds_label)
 
-                session = upc_session_maker()
-                instrument_qobj = Instruments.create(session, instrument=instrument_name,
-                                                              spacecraft=spacecraft_name)
-                instrument_id = instrument_qobj.instrumentid
-                session.close()
+            session = upc_session_maker()
+            instrument_qobj = Instruments.create(session, instrument=instrument_name,
+                                                          spacecraft=spacecraft_name)
+            instrument_id = instrument_qobj.instrumentid
+            session.close()
 
-                ######## Generate DataFiles Record ########
-                datafile_attributes = create_datafiles_atts(pds_label, edr_source, no_extension_inputfile + '.cub')
+            ######## Generate DataFiles Record ########
+            datafile_attributes = create_datafiles_atts(pds_label, edr_source, no_extension_inputfile + '.cub')
 
-                datafile_attributes['instrumentid'] = instrument_id
-                datafile_attributes['targetid'] = target_id
+            datafile_attributes['instrumentid'] = instrument_id
+            datafile_attributes['targetid'] = target_id
 
-                session = upc_session_maker()
-                datafile_qobj = DataFiles.create(session, **datafile_attributes)
-                upc_id = datafile_qobj.upcid
-                session.close()
+            session = upc_session_maker()
+            datafile_qobj = DataFiles.create(session, **datafile_attributes)
+            upc_id = datafile_qobj.upcid
+            session.close()
 
-                ######## Generate SearchTerms Record ########
-                search_term_attributes = create_search_terms_atts(cam_info_file, upc_id, no_extension_inputfile + '.cub', footprint_file, search_term_mapping)
+            ######## Generate SearchTerms Record ########
+            search_term_attributes = create_search_terms_atts(cam_info_file, upc_id, no_extension_inputfile + '.cub', footprint_file, search_term_mapping)
 
-                search_term_attributes['targetid'] = target_id
-                search_term_attributes['instrumentid'] = instrument_id
+            search_term_attributes['targetid'] = target_id
+            search_term_attributes['instrumentid'] = instrument_id
 
-                session = upc_session_maker()
-                SearchTerms.create(session, **search_term_attributes)
-                session.close()
+            session = upc_session_maker()
+            SearchTerms.create(session, **search_term_attributes)
+            session.close()
 
-                ######## Generate JsonKeywords Record ########
-                json_keywords_attributes = create_json_keywords_atts(cam_info_file, upc_id, inputfile, failing_command, logger)
+            ######## Generate JsonKeywords Record ########
+            json_keywords_attributes = create_json_keywords_atts(cam_info_file, upc_id, inputfile, failing_command, logger)
 
-                session = upc_session_maker()
-                JsonKeywords.create(session, **json_keywords_attributes)
-                session.close()
-            except sqlalchemy.exc.SQLAlchemyError as e:
-                logger.error("Database operation failed: %s \nRequeueing (%s, %s, %s)", e, inputfile,  archive)
-                RQ_main.QueueAdd((inputfile, archive))
-                return
+            session = upc_session_maker()
+            JsonKeywords.create(session, **json_keywords_attributes)
+            session.close()
 
-            try:
-                pds_session = pds_session_maker()
-                pds_session.flush()
-            except:
-                logger.debug("Unable to flush database connection")
+        # Handle SQL specific database errors
+        except SQLAlchemyError as e:
+            logger.error("Database operation failed: %s \nRequeueing (%s, %s)", e, inputfile,  archive)
+            RQ_main.QueueAdd((inputfile, archive))
+            raise e
 
-            pds_session.close()
-
-            # Disconnect from the engines
-            pds_engine.dispose()
-            upc_engine.dispose()
+        # Disconnect from the engines
+        upc_engine.dispose()
 
         if not persist:
             # Remove all files file from the workarea except for the copied
