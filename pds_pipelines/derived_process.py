@@ -8,7 +8,7 @@ import errno
 from ast import literal_eval
 from json import JSONDecoder
 
-from sqlalchemy import exc
+from sqlalchemy import exc, or_
 
 from pds_pipelines.redis_queue import RedisQueue
 from pds_pipelines.redis_lock import RedisLock
@@ -104,7 +104,7 @@ def main():
             if not failing_command:
                 session = upc_session_maker()
                 src = inputfile.replace(workarea, web_base)
-                datafile = session.query(DataFiles).filter(DataFiles.source==src).first()
+                datafile = session.query(DataFiles).filter(or_(DataFiles.source==src, DataFiles.detached_label==src)).first()
                 upc_id = datafile.upcid
                 try:
                     add_url(derived_product, upc_id, upc_session_maker)
