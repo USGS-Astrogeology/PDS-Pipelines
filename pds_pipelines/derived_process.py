@@ -8,7 +8,7 @@ import errno
 from ast import literal_eval
 from json import JSONDecoder
 
-from sqlalchemy import exc
+from sqlalchemy.exc import SQLAlchemyError
 
 from pds_pipelines.redis_queue import RedisQueue
 from pds_pipelines.redis_lock import RedisLock
@@ -111,7 +111,7 @@ def main():
                     session.close()
                     #os.remove(infile)
                     logger.info(f'Derived Process Success: %s', inputfile)
-                except exc.SQLAlchemyError as e:
+                except SQLAlchemyError as e:
                     logger.error('Error: %s\nRequeueing (%s, %s)', e, inputfile, archive)
                     RQ_derived.QueueAdd((inputfile, archive))
 
