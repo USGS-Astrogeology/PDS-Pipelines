@@ -64,13 +64,11 @@ class Archives(BaseMixin, Base):
     file = relationship('Files', backref='archives', uselist=False)
 
 
-try:
-    Session, engine = db_connect(pds_db)
-except:
-    Session = None
-    engine = None
-
-if isinstance(Session, sqlalchemy.orm.sessionmaker):
+def create_pds_database():
+    try:
+        _, engine = db_connect(pds_db)
+    except:
+        engine = None
 
     # Create the database
     if not database_exists(engine.url):

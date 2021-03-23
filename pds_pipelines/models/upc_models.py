@@ -227,13 +227,11 @@ class_map = {
     'search_terms': SearchTerms
 }
 
-try:
-    Session, engine = db_connect(upc_db)
-except:
-    Session = None
-    engine = None
-
-if isinstance(Session, sqlalchemy.orm.sessionmaker):
+def create_upc_database():
+    try:
+        _, engine = db_connect(upc_db)
+    except:
+        engine = None
 
     # Create the database
     if not database_exists(engine.url):
