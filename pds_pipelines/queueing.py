@@ -12,6 +12,7 @@ from sqlalchemy import Date, cast
 from sqlalchemy import or_
 from os.path import getsize, dirname, splitext, exists, basename, join
 
+from pds_pipelines.models import session_scope
 from pds_pipelines.models.pds_models import Files
 from pds_pipelines.db import db_connect
 from pds_pipelines.redis_queue import RedisQueue
@@ -186,7 +187,7 @@ class QueueProcess():
         -------
         None
         """
-        source_path = get_archive_att('path')
+        source_path = self.get_archive_att('path')
         if copy and not has_space(elements, source_path, workarea, disk_usage_ratio):
             self.logger.error("Unable to copy files: Insufficient disk space in %s.", workarea)
             raise IOError(f"Insufficient disk space in {workarea}.")
@@ -240,21 +241,20 @@ class DIQueueProcess(QueueProcess):
         results : sqlalchemy.orm.query.Query
             A collection of files represented as a sqlalchemy query object.
         """
-        session = self.session_maker()
-        td = (datetime.datetime.now(pytz.utc) -
-              datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
-        testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
-        if self.volume:
-            volstr = '%' + self.volume + '%'
-            results = session.query(Files).filter(
-                Files.archiveid == self.archive_id, Files.filename.like(volstr)).filter(
+        with session_scope(self.session_maker) as session:
+            td = (datetime.datetime.now(pytz.utc) -
+                  datetime.timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+            testing_date = datetime.datetime.strptime(str(td), "%Y-%m-%d %H:%M:%S")
+            if self.volume:
+                volstr = '%' + self.volume + '%'
+                results = session.query(Files).filter(
+                    Files.archiveid == self.archive_id, Files.filename.like(volstr)).filter(
+                        or_(cast(Files.di_date, Date) < testing_date,
+                            cast(Files.di_date, Date) is None))
+            else:
+                results = session.query(Files).filter(Files.archiveid == self.archive_id).filter(
                     or_(cast(Files.di_date, Date) < testing_date,
                         cast(Files.di_date, Date) is None))
-        else:
-            results = session.query(Files).filter(Files.archiveid == self.archive_id).filter(
-                or_(cast(Files.di_date, Date) < testing_date,
-                    cast(Files.di_date, Date) is None))
-        session.close()
 
         return results
 
@@ -270,7 +270,7 @@ class DIQueueProcess(QueueProcess):
         -------
         None
         """
-        path = get_archive_att('path')
+        path = self.get_archive_att('path')
         fname = path+element.filename
         self.ready_queue.QueueAdd((element.filename, self.archive))
 
@@ -284,19 +284,19 @@ class UPCQueueProcess(QueueProcess):
         results : sqlalchemy.orm.query.Query
             A collection of files represented as a sqlalchemy query object.
         """
-        session = self.session_maker()
-        if self.volume:
-            volstr = '%' + self.volume + '%'
-            results = session.query(Files).filter(Files.archiveid == self.archive_id,
-                                               Files.filename.like(volstr),
-                                               Files.upc_required == 't')
-        else:
-            results = session.query(Files).filter(Files.archiveid == self.archive_id,
-                                               Files.upc_required == 't')
-        if self.search:
-            qf = '%' + self.search + '%'
-            results = results.filter(Files.filename.like(qf))
-        session.close()
+        with session_scope(self.session_maker) as session:
+            if self.volume:
+                volstr = '%' + self.volume + '%'
+                results = session.query(Files).filter(Files.archiveid == self.archive_id,
+                                                   Files.filename.like(volstr),
+                                                   Files.upc_required == 't')
+            else:
+                results = session.query(Files).filter(Files.archiveid == self.archive_id,
+                                                   Files.upc_required == 't')
+            if self.search:
+                qf = '%' + self.search + '%'
+                results = results.filter(Files.filename.like(qf))
+
         return results
 
     def enqueue(self, element):
@@ -331,7 +331,9 @@ class IngestQueueProcess(QueueProcess):
         results : list
             A list of files
         """
-        archivepath = join(get_archive_att('path'), self.volume)
+        archivepath = self.get_archive_att('path')
+        if self.volume:
+            archivepath = join(archivepath, self.volume)
         results = []
         for dirpath, _, files in os.walk(archivepath):
             for filename in files:

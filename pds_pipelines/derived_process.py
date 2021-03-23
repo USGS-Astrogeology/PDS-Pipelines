@@ -14,6 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from pds_pipelines.redis_queue import RedisQueue
 from pds_pipelines.redis_lock import RedisLock
 from pds_pipelines.db import db_connect
+from pds_pipelines.models import session_scope
 from pds_pipelines.models.upc_models import DataFiles, SearchTerms, JsonKeywords
 from pds_pipelines.config import pds_log, pds_info, workarea, pds_db, upc_db, lock_obj, upc_error_queue, recipe_base, archive_base, derived_base, derived_url, web_base
 from pds_pipelines.utils import generate_processes, process, parse_pairs, reprocess
@@ -34,20 +35,18 @@ def makedir(inputfile):
 
 @reprocess
 def add_url(input_file, upc_id, session_maker):
-    session = session_maker()
     outputfile = input_file.replace(derived_base, derived_url)
     thumb = outputfile + '.thumbnail.jpg'
     browse = outputfile + '.browse.jpg'
-    q_record = session.query(JsonKeywords).filter(JsonKeywords.upcid==upc_id)
-    params = {}
-    old_json = q_record.first().jsonkeywords
-    old_json['browse'] = browse
-    old_json['thumbnail'] = thumb
-    params['jsonkeywords'] = old_json
+    with session_scope(session_maker) as session:
+        q_record = session.query(JsonKeywords).filter(JsonKeywords.upcid==upc_id)
+        params = {}
+        old_json = q_record.first().jsonkeywords
+        old_json['browse'] = browse
+        old_json['thumbnail'] = thumb
+        params['jsonkeywords'] = old_json
 
-    q_record.update(params, False)
-    session.commit()
-    session.close()
+        q_record.update(params, False)
 
 
 def main():
@@ -103,13 +102,12 @@ def main():
                                            derived_product=derived_product)
             failing_command, _ = process(processes, workarea, logger)
             if not failing_command:
-                session = upc_session_maker()
-                src = inputfile.replace(workarea, web_base)
-                datafile = session.query(DataFiles).filter(or_(DataFiles.source==src, DataFiles.detached_label==src)).first()
-                upc_id = datafile.upcid
+                with session_scope(upc_session_maker) as session:
+                    src = inputfile.replace(workarea, web_base)
+                    datafile = session.query(DataFiles).filter(or_(DataFiles.source==src, DataFiles.detached_label==src)).first()
+                    upc_id = datafile.upcid
                 try:
                     add_url(derived_product, upc_id, upc_session_maker)
-                    session.close()
                     #os.remove(infile)
                     logger.info(f'Derived Process Success: %s', inputfile)
                 except SQLAlchemyError as e:

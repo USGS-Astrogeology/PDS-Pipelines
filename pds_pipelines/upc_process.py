@@ -1,20 +1,16 @@
 #!/usr/bin/env python
-import re
 import os
 import sys
 import datetime
 import logging
-import hashlib
-import pds_pipelines
 from ast import literal_eval
 import pytz
 import argparse
-import jinja2
 from glob import glob
 
 import pvl
 import json
-from sqlalchemy import exc, and_
+from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from pds_pipelines.available_modules import *
 from osgeo import ogr
@@ -28,7 +24,7 @@ from pds_pipelines.recipe import Recipe
 from pds_pipelines.process import Process
 from pds_pipelines.pvl_utils import load_pvl, find_keyword
 from pds_pipelines.db import db_connect
-from pds_pipelines.models import pds_models
+from pds_pipelines.models import session_scope
 from pds_pipelines.models.upc_models import SearchTerms, Targets, Instruments, DataFiles, JsonKeywords, BaseMixin
 from pds_pipelines.config import pds_log, workarea, keyword_def, upc_db, lock_obj, upc_error_queue, web_base, archive_base, recipe_base
 from pds_pipelines.utils import generate_processes, process, add_process_db, get_isis_id
@@ -434,21 +430,19 @@ def main(user_args):
         target_name = get_target_name(pds_label)
 
         try:
-            session = upc_session_maker()
-            target_qobj = Targets.create(session, targetname=target_name,
-                                                  displayname=target_name.title(),
-                                                  system=target_name)
-            target_id = target_qobj.targetid
-            session.close()
+            with session_scope(upc_session_maker) as session:
+                target_qobj = Targets.create(session, targetname=target_name,
+                                                      displayname=target_name.title(),
+                                                      system=target_name)
+                target_id = target_qobj.targetid
 
             instrument_name = get_instrument_name(pds_label)
             spacecraft_name = get_spacecraft_name(pds_label)
 
-            session = upc_session_maker()
-            instrument_qobj = Instruments.create(session, instrument=instrument_name,
-                                                          spacecraft=spacecraft_name)
-            instrument_id = instrument_qobj.instrumentid
-            session.close()
+            with session_scope(upc_session_maker) as session:
+                instrument_qobj = Instruments.create(session, instrument=instrument_name,
+                                                              spacecraft=spacecraft_name)
+                instrument_id = instrument_qobj.instrumentid
 
             ######## Generate DataFiles Record ########
             datafile_attributes = create_datafiles_atts(pds_label, edr_source, no_extension_inputfile + '.cub')
@@ -456,10 +450,9 @@ def main(user_args):
             datafile_attributes['instrumentid'] = instrument_id
             datafile_attributes['targetid'] = target_id
 
-            session = upc_session_maker()
-            datafile_qobj = DataFiles.create(session, **datafile_attributes)
-            upc_id = datafile_qobj.upcid
-            session.close()
+            with session_scope(upc_session_maker) as session:
+                datafile_qobj = DataFiles.create(session, **datafile_attributes)
+                upc_id = datafile_qobj.upcid
 
             ######## Generate SearchTerms Record ########
             search_term_attributes = create_search_terms_atts(cam_info_file, upc_id, no_extension_inputfile + '.cub', footprint_file, search_term_mapping)
@@ -467,16 +460,14 @@ def main(user_args):
             search_term_attributes['targetid'] = target_id
             search_term_attributes['instrumentid'] = instrument_id
 
-            session = upc_session_maker()
-            SearchTerms.create(session, **search_term_attributes)
-            session.close()
+            with session_scope(upc_session_maker) as session:
+                SearchTerms.create(session, **search_term_attributes)
 
             ######## Generate JsonKeywords Record ########
             json_keywords_attributes = create_json_keywords_atts(cam_info_file, upc_id, inputfile, failing_command, logger)
 
-            session = upc_session_maker()
-            JsonKeywords.create(session, **json_keywords_attributes)
-            session.close()
+            with session_scope(upc_session_maker) as session:
+                JsonKeywords.create(session, **json_keywords_attributes)
 
         # Handle SQL specific database errors
         except SQLAlchemyError as e:
