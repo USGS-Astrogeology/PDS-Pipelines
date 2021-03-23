@@ -68,10 +68,11 @@ def create_pds_database():
     try:
         Session, engine = db_connect(pds_db)
     except:
+        Session = None
         engine = None
 
     if isinstance(Session, sqlalchemy.orm.sessionmaker):
-        
+
         # Create the database
         if not database_exists(engine.url):
             create_database(engine.url, template='template_postgis')  # This is a hardcode to the local template

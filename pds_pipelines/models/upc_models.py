@@ -231,6 +231,7 @@ def create_upc_database():
     try:
         Session, engine = db_connect(upc_db)
     except:
+        Session = None
         engine = None
 
     if isinstance(Session, sqlalchemy.orm.sessionmaker):
