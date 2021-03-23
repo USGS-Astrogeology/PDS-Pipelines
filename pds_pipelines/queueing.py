@@ -115,7 +115,7 @@ class QueueProcess():
         self.logger = self.get_logger(log_level)
         self.archive_info = json.load(open(pds_info, 'r'))
         try:
-            self.archive_id = self.get_archive_att("archive_id")
+            self.archive_id = self.get_archive_att('archiveid')
         except KeyError:
             self.logger.error("Archive %s not found in %s", archive, pds_info)
             raise
