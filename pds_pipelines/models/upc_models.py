@@ -229,19 +229,21 @@ class_map = {
 
 def create_upc_database():
     try:
-        _, engine = db_connect(upc_db)
+        Session, engine = db_connect(upc_db)
     except:
         engine = None
 
-    # Create the database
-    if not database_exists(engine.url):
-        create_database(engine.url, template='template_postgis')  # This is a hardcode to the local template
+    if isinstance(Session, sqlalchemy.orm.sessionmaker):
 
-    Base.metadata.bind = engine
-    # If the table does not exist, this will create it. This is used in case a
-    # user has manually dropped a table so that the project is not wrecked.
-    Base.metadata.create_all(tables=[DataFiles.__table__,
-                                     Instruments.__table__,
-                                     Targets.__table__,
-                                     SearchTerms.__table__,
-                                     JsonKeywords.__table__])
+        # Create the database
+        if not database_exists(engine.url):
+            create_database(engine.url, template='template_postgis')  # This is a hardcode to the local template
+
+        Base.metadata.bind = engine
+        # If the table does not exist, this will create it. This is used in case a
+        # user has manually dropped a table so that the project is not wrecked.
+        Base.metadata.create_all(tables=[DataFiles.__table__,
+                                         Instruments.__table__,
+                                         Targets.__table__,
+                                         SearchTerms.__table__,
+                                         JsonKeywords.__table__])
