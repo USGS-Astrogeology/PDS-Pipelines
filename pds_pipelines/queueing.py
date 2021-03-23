@@ -186,7 +186,7 @@ class QueueProcess():
         -------
         None
         """
-        source_path = get_archive_att("path")
+        source_path = get_archive_att('path')
         if copy and not has_space(elements, source_path, workarea, disk_usage_ratio):
             self.logger.error("Unable to copy files: Insufficient disk space in %s.", workarea)
             raise IOError(f"Insufficient disk space in {workarea}.")
@@ -270,7 +270,7 @@ class DIQueueProcess(QueueProcess):
         -------
         None
         """
-        path = get_archive_att("path")
+        path = get_archive_att('path')
         fname = path+element.filename
         self.ready_queue.QueueAdd((element.filename, self.archive))
 
@@ -331,7 +331,7 @@ class IngestQueueProcess(QueueProcess):
         results : list
             A list of files
         """
-        archivepath = join(get_archive_att("path"), self.volume)
+        archivepath = join(get_archive_att('path'), self.volume)
         results = []
         for dirpath, _, files in os.walk(archivepath):
             for filename in files:
