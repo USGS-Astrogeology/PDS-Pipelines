@@ -115,7 +115,7 @@ class QueueProcess():
         self.logger = self.get_logger(log_level)
         self.archive_info = json.load(open(pds_info, 'r'))
         try:
-            self.archive_id = self.get_archive_id()
+            self.archive_id = self.get_archive_att("archive_id")
         except KeyError:
             self.logger.error("Archive %s not found in %s", archive, pds_info)
             raise
@@ -186,7 +186,7 @@ class QueueProcess():
         -------
         None
         """
-        source_path = self.archive_info[self.archive]['path']
+        source_path = get_archive_att("path")
         if copy and not has_space(elements, source_path, workarea, disk_usage_ratio):
             self.logger.error("Unable to copy files: Insufficient disk space in %s.", workarea)
             raise IOError(f"Insufficient disk space in {workarea}.")
@@ -209,7 +209,7 @@ class QueueProcess():
         self.logger.info('Files Added to %s Queue: %s', self.process_name, addcount)
 
 
-    def get_archive_id(self):
+    def get_archive_att(self, att):
         """ Get the archive id from this process's archive name
 
         Returns
@@ -219,13 +219,15 @@ class QueueProcess():
 
         """
         try:
-            archive_id = self.archive_info[self.archive]['archiveid']
+            archive_id = self.archive_info[self.archive][att]
         except KeyError:
-            print("\nArchive '{}' not found in {}\n".format(archive, info))
-            print("The following archives are available:")
-            for k in info.keys():
-                print("\t{}".format(k))
+            msg = "\nArchive '{}' not found in {}\n".format(self.archive, pds_info)
+            msg += "The following archives are available:\n"
+            for k in self.archive_info.keys():
+                msg += "\t{}\n".format(k)
+            print(msg)
             raise
+            # raise KeyError('BadArchive', 'Given {} archive was not found'.format(self.archive))
 
         return archive_id
 
@@ -269,7 +271,7 @@ class DIQueueProcess(QueueProcess):
         -------
         None
         """
-        path = self.archive_info[self.archive]['path']
+        path = get_archive_att("path")
         fname = path+element.filename
         self.ready_queue.QueueAdd((element.filename, self.archive))
 
@@ -330,7 +332,7 @@ class IngestQueueProcess(QueueProcess):
         results : list
             A list of files
         """
-        archivepath = join(self.archive_info[self.archive]['path'], self.volume)
+        archivepath = join(get_archive_att("path"), self.volume)
         results = []
         for dirpath, _, files in os.walk(archivepath):
             for filename in files:
