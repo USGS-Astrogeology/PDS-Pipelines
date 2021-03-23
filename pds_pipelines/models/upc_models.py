@@ -248,3 +248,6 @@ def create_upc_database():
                                          Targets.__table__,
                                          SearchTerms.__table__,
                                          JsonKeywords.__table__])
+
+if __name__ == '__main__':
+    create_upc_database()

@@ -83,3 +83,6 @@ def create_pds_database():
         Base.metadata.create_all(tables=[ProcessRuns.__table__,
                                          Files.__table__,
                                          Archives.__table__])
+
+if __name__ == '__main__':
+    create_pds_database()

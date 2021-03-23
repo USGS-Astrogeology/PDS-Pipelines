@@ -61,6 +61,8 @@ install:
   - export PROJ_LIB=$CONDA_PREFIX/share/proj
 
 script:
+  - python pds_pipelines/models/pds_models.py
+  - python pds_pipelines/models/upc_models.py
   - pytest -v pds_pipelines
 
 after_success:
