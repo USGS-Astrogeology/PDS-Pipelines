@@ -227,7 +227,6 @@ class QueueProcess():
                 msg += "\t{}\n".format(k)
             print(msg)
             raise
-            # raise KeyError('BadArchive', 'Given {} archive was not found'.format(self.archive))
 
         return archive_id
 
