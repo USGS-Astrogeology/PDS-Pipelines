@@ -29,7 +29,7 @@ def main(user_args):
     if delete_from_di:
         pds_session_maker, pds_engine = db_connect(pds_db)
         with session_scope(pds_session_maker) as session:
-            query_res = pds_session.query(Files).filter(
+            query_res = session.query(Files).filter(
                         Files.filename.contains(pds_id))
             num_pds_queries = len(list(query_res))
 
@@ -45,7 +45,7 @@ def main(user_args):
 
             if user_answer == 'Y':
                 for record in query_res:
-                    pds_session.delete(record)
+                    session.delete(record)
 
     if delete_from_upc:
         upc_session_maker, upc_engine = db_connect(upc_db)
