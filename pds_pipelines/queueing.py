@@ -220,7 +220,7 @@ class QueueProcess():
 
         """
         try:
-            archive_id = self.archive_info[self.archive][att]
+            archive_att = self.archive_info[self.archive][att]
         except KeyError:
             msg = "\nArchive '{}' not found in {}\n".format(self.archive, pds_info)
             msg += "The following archives are available:\n"
@@ -229,7 +229,7 @@ class QueueProcess():
             print(msg)
             raise
 
-        return archive_id
+        return archive_att
 
 
 class DIQueueProcess(QueueProcess):
