@@ -9,6 +9,8 @@ from unittest import mock
 from pds_pipelines.db import db_connect
 from pds_pipelines.models import pds_models as models
 
+models.create_pds_database()
+
 @pytest.fixture
 def tables():
     _, engine = db_connect('di_test')

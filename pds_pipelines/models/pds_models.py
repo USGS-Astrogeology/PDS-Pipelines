@@ -6,8 +6,8 @@ from sqlalchemy import (Column, Integer, Float, String, Boolean,
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import database_exists, create_database
 
-from .db import db_connect
-from .config import pds_db
+from pds_pipelines.db import db_connect
+from pds_pipelines.config import pds_db
 
 Base = declarative_base()
 
@@ -83,6 +83,3 @@ def create_pds_database():
         Base.metadata.create_all(tables=[ProcessRuns.__table__,
                                          Files.__table__,
                                          Archives.__table__])
-
-if __name__ == '__main__':
-    create_pds_database()

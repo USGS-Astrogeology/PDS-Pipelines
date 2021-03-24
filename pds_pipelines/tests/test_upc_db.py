@@ -13,6 +13,8 @@ from pds_pipelines.models import upc_models as models
 from unittest.mock import patch, PropertyMock, Mock
 from unittest import mock
 
+models.create_upc_database()
+
 @pytest.fixture
 def pds_label():
     return PVLModule({'^IMAGE': ('5600R.IMG', 12),

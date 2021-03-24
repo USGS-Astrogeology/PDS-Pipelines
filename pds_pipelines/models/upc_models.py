@@ -11,9 +11,9 @@ from geoalchemy2 import Geometry
 
 import datetime
 
-from .db import db_connect
-from .config import upc_db
-from .utils import reprocess
+from pds_pipelines.db import db_connect
+from pds_pipelines.config import upc_db
+from pds_pipelines.utils import reprocess
 
 Base = declarative_base()
 
@@ -248,6 +248,3 @@ def create_upc_database():
                                          Targets.__table__,
                                          SearchTerms.__table__,
                                          JsonKeywords.__table__])
-
-if __name__ == '__main__':
-    create_upc_database()
