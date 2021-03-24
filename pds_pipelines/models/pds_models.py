@@ -6,8 +6,8 @@ from sqlalchemy import (Column, Integer, Float, String, Boolean,
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import database_exists, create_database
 
-from pds_pipelines.db import db_connect
-from pds_pipelines.config import pds_db
+from ..db import db_connect
+from ..config import pds_db
 
 Base = declarative_base()
 

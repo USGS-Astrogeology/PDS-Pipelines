@@ -11,9 +11,9 @@ from geoalchemy2 import Geometry
 
 import datetime
 
-from pds_pipelines.db import db_connect
-from pds_pipelines.config import upc_db
-from pds_pipelines.utils import reprocess
+from ..db import db_connect
+from ..config import upc_db
+from ..utils import reprocess
 
 Base = declarative_base()
 
